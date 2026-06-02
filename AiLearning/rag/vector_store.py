@@ -38,6 +38,14 @@ def save_documents(docs, embeddings, collection_name):
     collection.add(ids=ids, documents=texts, embeddings=embeddings)
 
 
+def get_all_documents(collection_name: str) -> list[str]:
+    """返回集合中所有文档的文本列表。"""
+    client = _get_client()
+    collection = client.get_or_create_collection(name=collection_name)
+    result = collection.get()
+    return result["documents"] if result["documents"] else []
+
+
 def search(query_embedding, collection_name, top_k=3):
     """按 embedding 向量搜索 top_k 个最相似的文档。
 

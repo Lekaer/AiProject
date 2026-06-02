@@ -6,6 +6,7 @@ import tempfile
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+from AiLearning.rag.bm25_store import build_index as build_bm25_index
 from AiLearning.rag.embedder import embed_texts
 from AiLearning.rag.generator import generate
 from AiLearning.rag.loader import load_document
@@ -56,6 +57,7 @@ def upload_doc(request):
         texts = [c.page_content for c in chunks]
         embeddings = embed_texts(texts)
         save_documents(chunks, embeddings, collection_name)
+        build_bm25_index(collection_name, texts)
 
         return JsonResponse({
             "message": "Document indexed successfully",
