@@ -3,7 +3,7 @@ from pathlib import Path
 from langchain_core.documents import Document
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 
-
+# 文件扩展名 → 对应加载器的映射
 LOADER_MAP = {
     ".pdf": PyPDFLoader,
     ".txt": TextLoader,
@@ -11,20 +11,20 @@ LOADER_MAP = {
 
 
 def load_document(file_path: str) -> list[Document]:
-    """Load a document and return a list of langchain Document objects.
+    """加载文档并返回 langchain Document 对象列表。
 
-    Supports PDF (via PyPDFLoader) and TXT (via TextLoader). The loader
-    is selected based on the file extension.
+    支持 PDF（通过 PyPDFLoader）和 TXT（通过 TextLoader），
+    根据文件扩展名自动选择加载器。
     """
     path = Path(file_path)
     if not path.exists():
-        raise FileNotFoundError(f"File not found: {file_path}")
+        raise FileNotFoundError(f"文件不存在: {file_path}")
 
     suffix = path.suffix.lower()
     loader_cls = LOADER_MAP.get(suffix)
     if loader_cls is None:
         raise ValueError(
-            f"Unsupported file type: {suffix}. Supported: {list(LOADER_MAP)}"
+            f"不支持的文件类型: {suffix}。支持的类型: {list(LOADER_MAP)}"
         )
 
     loader = loader_cls(str(path))

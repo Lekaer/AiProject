@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class AIError(Exception):
-    """Unified exception for all AI client failures."""
+    """AI 客户端统一异常，包装各类 OpenAI SDK 错误。"""
 
     def __init__(self, message: str, original_error: Exception | None = None):
         super().__init__(message)
@@ -16,11 +16,10 @@ class AIError(Exception):
 
 
 class AIClient:
-    """Thin wrapper around the OpenAI-compatible SDK.
+    """OpenAI 兼容 SDK 的轻量封装。
 
-    Provides chat completion (streaming and non-streaming) and
-    embedding generation. Has no Django dependency — all config
-    is passed to the constructor.
+    提供对话补全（流式/非流式）和 embedding 生成能力。
+    不依赖 Django，所有配置通过构造函数传入。
     """
 
     def __init__(
@@ -31,6 +30,7 @@ class AIClient:
         timeout: float = 60.0,
     ):
         self.default_model = default_model
+        # max_retries=2: SDK 内部重试，避免网络抖动导致失败
         self._client = OpenAI(
             api_key=api_key,
             base_url=base_url,
@@ -48,7 +48,7 @@ class AIClient:
         extra_body: dict | None = None,
         **kwargs,
     ) -> str:
-        """Send a chat completion request and return the response text."""
+        """发送非流式对话请求，返回完整回复文本。"""
         try:
             response = self._client.chat.completions.create(
                 model=model or self.default_model,
@@ -86,7 +86,7 @@ class AIClient:
         extra_body: dict | None = None,
         **kwargs,
     ) -> Iterator[str]:
-        """Stream a chat completion, yielding text chunks as they arrive."""
+        """流式对话补全，逐步 yield 文本块。"""
         try:
             stream = self._client.chat.completions.create(
                 model=model or self.default_model,
@@ -123,7 +123,7 @@ class AIClient:
         model: str = "text-embedding-ada-002",
         **kwargs,
     ) -> list[float]:
-        """Generate an embedding vector for a single text string."""
+        """为单个文本生成 embedding 向量。"""
         try:
             response = self._client.embeddings.create(
                 input=[text],
@@ -152,7 +152,7 @@ class AIClient:
         model: str = "text-embedding-ada-002",
         **kwargs,
     ) -> list[list[float]]:
-        """Generate embeddings for multiple texts in a single API call."""
+        """为多条文本批量生成 embedding 向量。"""
         try:
             response = self._client.embeddings.create(
                 input=texts,
@@ -176,14 +176,14 @@ class AIClient:
             raise AIError(f"Unexpected error: {e}", original_error=e) from e
 
 
+# AI 客户端模块级单例
 _client: AIClient | None = None
 
 
 def get_client() -> AIClient:
-    """Return the module-level singleton AIClient.
+    """获取模块级 AIClient 单例。
 
-    In a Django project, reads from Django settings. Outside Django,
-    reads from environment variables with the same defaults.
+    Django 环境下从 settings 读取配置，非 Django 环境从环境变量读取。
     """
     global _client
     if _client is None:
@@ -227,7 +227,7 @@ PROMPT_TEMPLATE = """你是一个知识问答助手，请根据以下上下文�
 
 
 def generate(question: str, context_docs: list[str]) -> str:
-    """Generate an answer based on the question and retrieved context documents."""
+    """根据问题和检索到的上下文文档生成回答。"""
     context = "\n\n".join(context_docs) if context_docs else "无相关上下文信息"
     prompt = PROMPT_TEMPLATE.format(context=context, question=question)
     return get_client().chat(

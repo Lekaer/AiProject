@@ -7,7 +7,11 @@ def split_documents(
     chunk_size: int = 500,
     chunk_overlap: int = 50,
 ) -> list[Document]:
-    """Split a list of Documents into smaller chunks."""
+    """将文档列表切分为更小的文本块。
+
+    使用递归字符分割器，按 chunk_size 切分，相邻块之间保留 chunk_overlap
+    的重叠内容，避免语义在边界处断裂。
+    """
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,
         chunk_overlap=chunk_overlap,
