@@ -1,0 +1,32 @@
+[
+  {
+    "name": "上传空文件",
+    "expected": "不崩溃，正常返回空文档列表",
+    "passed": false,
+    "result": "文档页数=1, 切片数=0"
+  },
+  {
+    "name": "上传不支持的格式(.xlsx)",
+    "expected": "抛出 ValueError",
+    "passed": true,
+    "result": "ValueError: 不支持的文件类型: .xlsx。支持的类型: ['.pdf', '.txt']"
+  },
+  {
+    "name": "向量库为空时提问",
+    "expected": "检索返回空列表，不崩溃",
+    "passed": true,
+    "result": "检索到 0 篇文档"
+  },
+  {
+    "name": "问题为空字符串",
+    "expected": "不崩溃",
+    "passed": true,
+    "result": "检索到 5 篇文档，回答前100字: 您还没有提出具体问题，请告诉我您想了解什么，我会根据提供的上下文为您准确解答。"
+  },
+  {
+    "name": "问题超长(1000字以上)",
+    "expected": "正常完成检索和生成",
+    "passed": true,
+    "result": "问题长度=950字, 检索到5篇文档, 回答长度=751字"
+  }
+]

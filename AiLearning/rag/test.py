@@ -11,12 +11,10 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 if __name__ == '__main__':
-    print(os.getcwd())
-    print(os.path.join(BASE_DIR, 'AiLearning/docs/商户征信项目.pdf'))
     # 加载两篇 PDF 文档
-    docs1 = loader.load_document(os.path.join(BASE_DIR, 'AiLearning/docs/商户征信项目.pdf'))
-    docs2 = loader.load_document(os.path.join(BASE_DIR, 'AiLearning/docs/新商户平台概念说明.pdf'))
-    docs = docs1 + docs2
+    # docs1 = loader.load_document(os.path.join(BASE_DIR, 'AiLearning/docs/商户征信项目.pdf'))
+    docs = loader.load_document(os.path.join(BASE_DIR, 'AiLearning/docs/新商户平台概念说明.pdf'))
+    # docs = docs1 + docs2
     # 按 500 字符切分，重叠 50 字符
     chunks = splitter.split_documents(docs)
     print(f"原始文档数：{len(docs)}")

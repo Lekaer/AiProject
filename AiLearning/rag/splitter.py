@@ -5,7 +5,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 def split_documents(
     documents: list[Document],
     chunk_size: int = 500,
-    chunk_overlap: int = 50,
+    chunk_overlap: int = 100,
 ) -> list[Document]:
     """将文档列表切分为更小的文本块。
 

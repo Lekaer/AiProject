@@ -28,4 +28,11 @@ def load_document(file_path: str) -> list[Document]:
         )
 
     loader = loader_cls(str(path))
-    return loader.load()
+    docs = loader.load()
+
+    # 过滤空文档（TextLoader 对空文件也会生成一个 page_content="" 的 Document）
+    docs = [d for d in docs if d.page_content.strip()]
+    if not docs:
+        raise ValueError(f"文件内容为空: {file_path}")
+
+    return docs
