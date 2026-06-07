@@ -46,3 +46,10 @@ def search(query: str, collection_name: str, top_k: int = 5) -> list[str]:
     scores = index.get_scores(tokenized_query)
     top_indices = sorted(range(len(scores)), key=lambda i: scores[i], reverse=True)[:top_k]
     return [docs[i] for i in top_indices]
+
+
+def delete_index(collection_name: str):
+    """删除指定集合的 BM25 索引文件，不存在则静默跳过。"""
+    path = _index_path(collection_name)
+    if os.path.exists(path):
+        os.unlink(path)
