@@ -181,55 +181,35 @@ _client: AIClient | None = None
 
 
 def get_client() -> AIClient:
-    """获取模块级 AIClient 单例。
-
-    Django 环境下从 settings 读取配置，非 Django 环境从环境变量读取。
-    """
+    """获取模块级 AIClient 单例，从 config.py + 环境变量读取配置。"""
     global _client
     if _client is None:
-        # Try Django settings first
-        try:
-            from django.conf import settings as django_settings
-
-            if django_settings.configured:
-                _client = AIClient(
-                    api_key=django_settings.DEEPSEEK_API_KEY,
-                    base_url=django_settings.DEEPSEEK_BASE_URL,
-                    default_model=django_settings.DEEPSEEK_MODEL,
-                    timeout=getattr(django_settings, "DEEPSEEK_TIMEOUT", 60.0),
-                )
-                return _client
-        except Exception:
-            pass
-
-        # Fallback: read from environment variables directly
-        import os
+        from config import (
+            DEEPSEEK_API_KEY,
+            DEEPSEEK_BASE_URL,
+            DEEPSEEK_MODEL,
+            DEEPSEEK_TIMEOUT,
+        )
 
         _client = AIClient(
-            api_key=os.environ.get(
-                "DEEPSEEK_API_KEY", "sk-118beac915694f66b546dd4ac2669b19"
-            ),
-            base_url=os.environ.get(
-                "DEEPSEEK_BASE_URL", "https://api.deepseek.com"
-            ),
-            default_model=os.environ.get(
-                "DEEPSEEK_MODEL", "deepseek-v4-pro"
-            ),
-            timeout=float(os.environ.get("DEEPSEEK_TIMEOUT", "60")),
+            api_key=DEEPSEEK_API_KEY,
+            base_url=DEEPSEEK_BASE_URL,
+            default_model=DEEPSEEK_MODEL,
+            timeout=DEEPSEEK_TIMEOUT,
         )
     return _client
 
 
-PROMPT_TEMPLATE = """你是一个知识问答助手，请根据以下上下文回答用户问题。
-上下文：{context}
-问题：{question}
-请给出准确简洁的回答。"""
+from AiLearning.prompts.rag import DEFAULT_RAG_PROMPT
 
 
 def generate(question: str, context_docs: list[str]) -> str:
     """根据问题和检索到的上下文文档生成回答。"""
     context = "\n\n".join(context_docs) if context_docs else "无相关上下文信息"
-    prompt = PROMPT_TEMPLATE.format(context=context, question=question)
+    prompt = DEFAULT_RAG_PROMPT.format(context=context, question=question)
     return get_client().chat(
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "system", "content": DEFAULT_RAG_PROMPT.system},
+            {"role": "user", "content": prompt},
+        ],
     )
