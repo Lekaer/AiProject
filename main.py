@@ -13,6 +13,7 @@ from AiLearning.rag.embedder import embed_texts
 from AiLearning.rag.generator import generate
 from AiLearning.rag.loader import load_document
 from AiLearning.rag.retriever import retrieve
+from AiLearning.router.agent_router import dispatch
 from AiLearning.rag.splitter import split_documents
 from AiLearning.rag.vector_store import (
     collection_exists,
@@ -68,6 +69,7 @@ class DeleteDocRequest(BaseModel):
 
 class AskRequest(BaseModel):
     question: str
+    app: str | None = None
 
 
 # ── health ──────────────────────────────────────────────────────────
@@ -194,6 +196,8 @@ def ask(
 ):
     pid = _require_project_id(project_id)
     collection_name = _kb_key(pid, kb_name)
-    context_docs = retrieve(body.question, collection_name)
-    answer = generate(body.question, context_docs)
-    return {"answer": answer}
+    try:
+        response = dispatch(body.question, app=body.app, collection_name=collection_name)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"answer": response.answer, "agent": response.agent_name}
