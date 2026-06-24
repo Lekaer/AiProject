@@ -8,8 +8,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Run dev server (auto-reload on code changes)
 uvicorn main:app --reload
 
-# Run standalone scripts
-python AiLearning/rag/test.py
+# Run standalone scripts (always use -m from project root)
+python -m AiLearning.agents.test
+python -m AiLearning.router.agent_router
 
 # Run RAG pipeline tests
 python -m pytest AiLearning/rag/tests/ -v
@@ -22,17 +23,38 @@ API docs available at `http://127.0.0.1:8000/docs` (Swagger UI) and `/redoc` whi
 
 ## Architecture
 
-FastAPI app (`main.py`) serving a RAG pipeline. No database — the app calls LLMs and manages a local vector index.
+FastAPI app (`main.py`) serving a RAG pipeline with agent-based routing. No database — the app calls LLMs and manages a local vector index.
+
+### Agent Layer (`AiLearning/agents/`, `AiLearning/router/`, `AiLearning/prompts/`)
+
+Three agents, all subclassing `BaseAgent` (ABC with `name` and `execute(question, **kwargs) -> AgentResponse`):
+
+| Agent | Name | Purpose | Temperature |
+|-------|------|---------|-------------|
+| `RAGAgent` | `rag` | General knowledge base Q&A | 0.0 |
+| `LearningAgent` | `learning` | Learning tutor style | 0.7 |
+| `TestCaseAgent` | `testcase` | Structured test case generation | (default) |
+
+`AgentResponse` is a dataclass: `answer: str`, `agent_name: str`, `metadata: dict`.
+
+**Router** (`agent_router.py`): `dispatch(question, app=None, **kwargs)` resolves intent in three tiers:
+
+1. **Explicit `app`** — if provided, route directly to that agent. Raises `ValueError` for unknown agent names.
+2. **Keyword match** — scan question for keywords mapped to agents (e.g., "测试"/"用例"/"test" → testcase, "学习"/"理解"/"计划" → learning).
+3. **LLM intent detection** — classify via DeepSeek with `INTENT_DETECTION_PROMPT` (labels: `rag`/`testcase`/`learning`). Falls back to `rag` on failure.
+
+All extra kwargs (e.g., `collection_name`) pass through to the agent.
+
+Prompt templates in `AiLearning/prompts/` each contain `system` and `template` fields with a `format(context, question)` method.
 
 ### AI Client (`rag/generator.py`)
 
-The core abstraction. `AIClient` wraps the OpenAI-compatible SDK, targeting DeepSeek by default. All OpenAI SDK errors are unified under `AIError`.
+`AIClient` wraps the OpenAI-compatible SDK, targeting DeepSeek by default. All errors unified under `AIError`.
 
 - `get_client()` — module-level singleton. Reads config from `config.py` + env vars.
 - `AIClient.chat()` — non-streaming chat, returns `str`
 - `AIClient.chat_stream()` — streaming chat, yields `str` chunks
-- `AIClient.embed()` / `embed_batch()` — API-based embedding (not used by the RAG pipeline; see below)
-- `generate(question, context_docs)` — formats `PROMPT_TEMPLATE` + calls `chat()`. Used by the `/ask` endpoint.
+- `AIClient.embed()` / `embed_batch()` — API-based embedding (not wired into RAG flow)
 
 **Import path for other modules:**
 
@@ -63,7 +85,7 @@ bm25_store.py (BM25Okapi + jieba, persisted to ../bm25_indices/)
                           retriever.py (vector + BM25, RRF fusion → top-k)
                                    │
                                    ▼
-                          generator.generate() (prompt + LLM → answer)
+                          router.dispatch() → agent.execute()
 ```
 
 **Two separate embedding paths:**
@@ -88,7 +110,7 @@ All endpoints require `X-Project-Id` header for multi-tenant isolation. Knowledg
 | `POST` | `/api/kb/{name}/docs` | Upload doc (multipart `file`) |
 | `GET` | `/api/kb/{name}/docs` | List docs in KB |
 | `DELETE` | `/api/kb/{name}/docs` | Delete doc `{filename}` |
-| `POST` | `/api/kb/{name}/ask` | Ask question `{question}` |
+| `POST` | `/api/kb/{name}/ask` | Ask question `{question}`, optional `{app}` |
 
 Uploading a file with the same filename auto-replaces the old version. Different filenames append to the KB.
 

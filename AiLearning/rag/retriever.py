@@ -26,6 +26,30 @@ def _rrf_fusion(
     return sorted_docs
 
 
+def retrieve_from_multiple_collections(
+    query: str,
+    collection_names: list[str],
+    top_k: int = 5,
+) -> list[str]:
+    """跨多个知识库混合检索，RRF 融合后返回 top_k 个文档。"""
+    recall_k = top_k * 2
+    query_vecs = embedder.embed_queries([query])
+    query_vec = query_vecs[0]
+    score: dict[str, float] = {}
+
+    for collection_name in collection_names:
+        vector_results = vector_store.search(query_vec, collection_name, top_k=recall_k)
+        bm25_results = bm25_store.search(query, collection_name, top_k=recall_k)
+
+        for rank, doc in enumerate(vector_results):
+            score[doc] = score.get(doc, 0.0) + 1.0 / (60 + rank + 1)
+
+        for rank, doc in enumerate(bm25_results):
+            score[doc] = score.get(doc, 0.0) + 1.0 / (60 + rank + 1)
+
+    return sorted(score.keys(), key=lambda d: score[d], reverse=True)[:top_k]
+
+
 def retrieve(query: str, collection_name: str, top_k: int = 5) -> list[str]:
     """混合检索：向量 + BM25，RRF 融合后返回 top_k 个文档。"""
     # 每路召回 top_k * 2 个结果，给融合留冗余

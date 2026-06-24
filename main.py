@@ -201,3 +201,22 @@ def ask(
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     return {"answer": response.answer, "agent": response.agent_name}
+
+
+@app.post("/api/ask")
+def ask_project(
+    body: AskRequest,
+    project_id: str = Header(None, alias="X-Project-Id"),
+):
+    """项目级问答：在该 project 下所有知识库中检索。"""
+    pid = _require_project_id(project_id)
+    safe_pid = _sanitize_name(pid)
+    items = list_collections_by_prefix(f"{safe_pid}__")
+    collection_names = [item["name"] for item in items]
+    if not collection_names:
+        raise HTTPException(status_code=404, detail="该项目下没有知识库")
+    try:
+        response = dispatch(body.question, app=body.app, collection_names=collection_names)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return {"answer": response.answer, "agent": response.agent_name}

@@ -1,6 +1,6 @@
 from AiLearning.agents.base import AgentResponse, BaseAgent
 from AiLearning.prompts.rag import DEFAULT_RAG_PROMPT
-from AiLearning.rag.retriever import retrieve
+from AiLearning.rag.retriever import retrieve, retrieve_from_multiple_collections
 from AiLearning.service import get_client
 
 
@@ -15,9 +15,18 @@ class RAGAgent(BaseAgent):
         return "rag"
 
     def execute(self, question: str, **kwargs) -> AgentResponse:
+        collection_names = kwargs.get("collection_names", [])
         collection_name = kwargs.get("collection_name")
 
-        context_docs = retrieve(question, collection_name) if collection_name else []
+        if collection_names:
+            print(collection_names)
+            context_docs = retrieve_from_multiple_collections(question, collection_names)
+        elif collection_name:
+            print(collection_name)
+            context_docs = retrieve(question, collection_name)
+        else:
+            context_docs = []
+
         context = self._build_context(context_docs)
 
         prompt = DEFAULT_RAG_PROMPT.format(context=context, question=question)
