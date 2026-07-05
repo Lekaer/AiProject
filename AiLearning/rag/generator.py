@@ -1,4 +1,5 @@
 import logging
+import time as time_module
 from typing import Iterator
 
 import openai
@@ -61,6 +62,59 @@ class AIClient:
                 **kwargs,
             )
             return response.choices[0].message.content or ""
+        except openai.AuthenticationError as e:
+            raise AIError(f"Authentication failed: {e}", original_error=e) from e
+        except openai.RateLimitError as e:
+            raise AIError(f"Rate limit exceeded: {e}", original_error=e) from e
+        except openai.APIConnectionError as e:
+            raise AIError(f"Network error: {e}", original_error=e) from e
+        except openai.APITimeoutError as e:
+            raise AIError(f"Request timed out: {e}", original_error=e) from e
+        except openai.APIError as e:
+            status = getattr(e, "status_code", "?")
+            raise AIError(f"API error (status {status}): {e}", original_error=e) from e
+        except Exception as e:
+            logger.exception("Unexpected error during chat completion")
+            raise AIError(f"Unexpected error: {e}", original_error=e) from e
+
+    def chat_with_usage(
+        self,
+        messages: list[dict[str, str]],
+        model: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        reasoning_effort: str | None = None,
+        extra_body: dict | None = None,
+        **kwargs,
+    ) -> tuple[str, dict, float]:
+        """非流式对话 + token 用量 + 耗时。
+
+        Returns:
+            (content, usage_dict, elapsed_seconds)
+            usage_dict = {"prompt_tokens", "completion_tokens", "total_tokens"}
+        """
+        start = time_module.perf_counter()
+        try:
+            response = self._client.chat.completions.create(
+                model=model or self.default_model,
+                messages=messages,
+                stream=False,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                reasoning_effort=reasoning_effort,
+                extra_body=extra_body,
+                **kwargs,
+            )
+            elapsed = time_module.perf_counter() - start
+            content = response.choices[0].message.content or ""
+            usage = {}
+            if response.usage:
+                usage = {
+                    "prompt_tokens": response.usage.prompt_tokens or 0,
+                    "completion_tokens": response.usage.completion_tokens or 0,
+                    "total_tokens": response.usage.total_tokens or 0,
+                }
+            return content, usage, elapsed
         except openai.AuthenticationError as e:
             raise AIError(f"Authentication failed: {e}", original_error=e) from e
         except openai.RateLimitError as e:

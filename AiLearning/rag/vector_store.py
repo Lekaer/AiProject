@@ -108,6 +108,20 @@ def delete_by_filename(collection_name: str, filename: str) -> int:
         return 0
 
 
+def get_by_filename(collection_name: str, filename: str) -> list[str]:
+    """获取指定文件名的所有 chunk 文本。
+
+    集合不存在或没有匹配项时返回空列表。
+    """
+    client = _get_client()
+    try:
+        collection = client.get_collection(name=collection_name)
+        result = collection.get(where={"filename": filename})
+        return result["documents"] if result["documents"] else []
+    except Exception:
+        return []
+
+
 def list_filenames(collection_name: str) -> list[str]:
     """返回集合中所有不重复的文件名。"""
     client = _get_client()

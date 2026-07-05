@@ -70,6 +70,8 @@ class DeleteDocRequest(BaseModel):
 class AskRequest(BaseModel):
     question: str
     app: str | None = None
+    requirement_doc: str | None = None
+    reference_case_filenames: list[str] | None = None
 
 
 # ── health ──────────────────────────────────────────────────────────
@@ -197,10 +199,20 @@ def ask(
     pid = _require_project_id(project_id)
     collection_name = _kb_key(pid, kb_name)
     try:
-        response = dispatch(body.question, app=body.app, collection_name=collection_name)
+        response = dispatch(
+            body.question,
+            app=body.app,
+            collection_name=collection_name,
+            requirement_doc=body.requirement_doc,
+            reference_case_filenames=body.reference_case_filenames,
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return {"answer": response.answer, "agent": response.agent_name}
+    return {
+        "answer": response.answer,
+        "agent": response.agent_name,
+        "selected_skills": response.metadata.get("selected_skills", []),
+    }
 
 
 @app.post("/api/ask")
@@ -216,7 +228,17 @@ def ask_project(
     if not collection_names:
         raise HTTPException(status_code=404, detail="该项目下没有知识库")
     try:
-        response = dispatch(body.question, app=body.app, collection_names=collection_names)
+        response = dispatch(
+            body.question,
+            app=body.app,
+            collection_names=collection_names,
+            requirement_doc=body.requirement_doc,
+            reference_case_filenames=body.reference_case_filenames,
+        )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    return {"answer": response.answer, "agent": response.agent_name}
+    return {
+        "answer": response.answer,
+        "agent": response.agent_name,
+        "selected_skills": response.metadata.get("selected_skills", []),
+    }

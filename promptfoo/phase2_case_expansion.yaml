@@ -1,0 +1,116 @@
+# Phase 2: 用例展开质量评估
+#
+# 用法:
+#   export OPENAI_API_KEY="sk-xxx"     # DeepSeek API Key
+#   export OPENAI_BASE_URL="https://api.deepseek.com/v1"
+#   cd promptfoo && promptfoo eval -c phase2_case_expansion.yaml --grader openai:deepseek-v4-pro
+#
+# 关键: --grader openai:deepseek-v4-pro 告诉 PromptFoo 用 DeepSeek API 做 Judge，
+#       而不是默认的本地 Codex（你本地 Codex 二进制不完整）
+#
+# 前置条件:
+#   1. uvicorn main:app --reload 已在 8000 端口启动
+#   2. 已创建 eval_kb 知识库: curl -X POST http://127.0.0.1:8000/api/kb -H "X-Project-Id: eval-project" -H "Content-Type: application/json" -d '{"name":"eval_kb"}'
+#   3. OPENAI_API_KEY + OPENAI_BASE_URL 环境变量已导出
+description: "TestCaseDesignAgent - Phase 2 Case Expansion"
+
+outputPath: ./phase2_result.json
+
+commandLineOptions:
+  verbose: true
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask"
+    label: testcase_design_agent
+    config:
+      method: "POST"
+      headers:
+        "Content-Type": "application/json"
+        "X-Project-Id": "eval-project"
+      body:
+        question: "{{question}}"
+        app: "testcase_design"
+        requirement_doc: "{{requirement_doc}}"
+      transformResponse: json.answer
+      timeout: 180000
+
+tests:
+  - path: ../AiLearning/tests/testcase_design_eval_set_phase2.json
+
+defaultTest:
+  vars:
+    kb_name: "eval_kb"
+  assert:
+    # ── 规则1: output 是合法 JSON 数组 ──────────────────────────
+    - type: javascript
+      value: |
+        try {
+          const cases = JSON.parse(output);
+          return Array.isArray(cases);
+        } catch {
+          return false;
+        }
+
+    # ── 规则2: 至少生成 1 条用例 ─────────────────────────────────
+    - type: javascript
+      value: |
+        try {
+          const cases = JSON.parse(output);
+          return Array.isArray(cases) && cases.length > 0;
+        } catch {
+          return false;
+        }
+
+    # ── 规则3: 每条用例包含 id/title/type/precondition/steps/expected ──
+    - type: javascript
+      value: |
+        try {
+          const cases = JSON.parse(output);
+          if (!Array.isArray(cases) || cases.length === 0) return false;
+          const required = ["id", "title", "type", "precondition", "steps", "expected"];
+          return cases.every((c) => required.every((k) => k in c));
+        } catch {
+          return false;
+        }
+
+    # ── 规则4: steps 字段是数组且长度 ≥ 2 ────────────────────────
+    - type: javascript
+      value: |
+        try {
+          const cases = JSON.parse(output);
+          if (!Array.isArray(cases) || cases.length === 0) return false;
+          return cases.every((c) => Array.isArray(c.steps) && c.steps.length >= 2);
+        } catch {
+          return false;
+        }
+
+    # ── 规则5: expected 字段不为空字符串 ─────────────────────────
+    - type: javascript
+      value: |
+        try {
+          const cases = JSON.parse(output);
+          if (!Array.isArray(cases) || cases.length === 0) return false;
+          return cases.every((c) => typeof c.expected === "string" && c.expected.trim().length > 0);
+        } catch {
+          return false;
+        }
+
+    # ── 规则6: type 字段值非空 ──────────────────────────────────
+    - type: javascript
+      value: |
+        try {
+          const cases = JSON.parse(output);
+          if (!Array.isArray(cases) || cases.length === 0) return false;
+          return cases.every((c) => typeof c.type === "string" && c.type.trim().length > 0);
+        } catch {
+          return false;
+        }
+
+    # ── 规则7: Python Judge 评估 steps 可执行性 ────────────────────
+    # 用自定义 Python 脚本调 DeepSeek API 评分，兼容其 markdown fence 返回格式
+    # 脚本内置三级 JSON fallback 解析，断言均分 ≥ 3.5（归一化 score ≥ 0.7）
+    - type: python
+      value: file://grader_steps_executability.py

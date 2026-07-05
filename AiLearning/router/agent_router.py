@@ -4,6 +4,7 @@ from AiLearning.agents.base import AgentResponse
 from AiLearning.agents.learning_agent import LearningAgent
 from AiLearning.agents.rag_agent import RAGAgent
 from AiLearning.agents.testcase_agent import TestCaseAgent
+from AiLearning.agents.testcase_design_agent import TestCaseDesignAgent
 from AiLearning.prompts.router import INTENT_DETECTION_PROMPT
 from AiLearning.service import get_client
 
@@ -18,7 +19,7 @@ def _init_registry():
     """懒加载注册内置 agent，幂等。"""
     if _agents:
         return
-    for agent_cls in (RAGAgent, TestCaseAgent, LearningAgent):
+    for agent_cls in (RAGAgent, TestCaseAgent, LearningAgent, TestCaseDesignAgent):
         instance = agent_cls()
         _agents[instance.name] = instance
 
@@ -31,16 +32,16 @@ def _get_agent(name: str):
 
 # ── 关键词映射 ──────────────────────────────────────────────────────
 
-_KEYWORD_MAP = {
-    "testcase": ["用例", "测试", "case", "test", "需求"],
-    "learning": ["解释", "学习", "计划", "路线", "实践"],
-}
+_KEYWORD_MAP: list[tuple[str, list[str]]] = [
+    ("testcase_design", ["用例", "测试", "case", "test", "需求", "设计用例", "用例设计", "补充"]),
+    ("learning", ["解释", "学习", "计划", "路线", "实践"]),
+]
 
 
 def _keyword_detect(question: str) -> str | None:
-    """扫描问题中的关键词，命中则返回 agent 名称，无命中返回 None。"""
+    """按优先级扫描问题中的关键词，命中则返回 agent 名称，无命中返回 None。"""
     q_lower = question.lower()
-    for agent_name, keywords in _KEYWORD_MAP.items():
+    for agent_name, keywords in _KEYWORD_MAP:
         for kw in keywords:
             if kw.lower() in q_lower:
                 return agent_name
