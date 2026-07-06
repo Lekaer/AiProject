@@ -17,7 +17,9 @@ from AiLearning.rag.vector_store import get_by_filename
 from AiLearning.service import get_client
 from AiLearning.skills import SKILL_BATCHES, SKILL_REGISTRY, build_skills_catalog
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class TestCaseDesignAgent(BaseAgent):
