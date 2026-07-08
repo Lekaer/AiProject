@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiProject</title>
+<style>
+  :root {
+    --bg: #f5f5f5;
+    --card: #fff;
+    --border: #e0e0e0;
+    --text: #333;
+    --muted: #888;
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --success: #16a34a;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .app { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+  /* tabs */
+  .tabs { display: flex; gap: 0; margin-bottom: 20px; background: var(--card); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+  .tab-btn { flex: 1; padding: 14px 20px; border: none; background: transparent; cursor: pointer; font-size: 15px; color: var(--muted); transition: .2s; }
+  .tab-btn.active { background: var(--accent); color: #fff; font-weight: 600; }
+  .tab-btn:not(.active):hover { background: #f0f0ff; color: var(--accent); }
+
+  /* panels */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* cards */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+
+  /* form rows */
+  .row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+  .row:last-child { margin-bottom: 0; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 13px; color: var(--muted); }
+  .field input, .field select, .field textarea {
+    padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; transition: .2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(79,70,229,.15); }
+  .field textarea { resize: vertical; min-height: 120px; font-family: inherit; }
+  .grow { flex: 1; }
+
+  /* buttons */
+  .btn { padding: 8px 16px; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; transition: .2s; white-space: nowrap; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { background: var(--danger-hover); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: #f0f0f0; }
+  .btn-sm { padding: 4px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* doc list */
+  .doc-list { max-height: 300px; overflow-y: auto; }
+  .doc-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .doc-item:last-child { border-bottom: none; }
+  .doc-item .name { font-size: 14px; }
+  .doc-item .meta { font-size: 12px; color: var(--muted); margin-left: 12px; white-space: nowrap; }
+  .doc-item .left { display: flex; align-items: center; gap: 8px; }
+  .doc-item .left input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+
+  /* progress */
+  .progress-section { margin-top: 12px; }
+  .progress-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; }
+  .progress-item .icon { width: 20px; text-align: center; flex-shrink: 0; }
+  .progress-item .text { flex: 1; }
+  .progress-item .time { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+  /* results table */
+  .result-toolbar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .result-count { font-size: 14px; color: var(--muted); flex: 1; }
+  .table-wrap { max-height: 500px; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { position: sticky; top: 0; background: #fafafa; text-align: left; padding: 8px 10px; border-bottom: 2px solid var(--border); font-weight: 600; white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: top; max-width: 300px; word-break: break-word; }
+  tr:hover td { background: #f8f8ff; }
+
+  /* hints */
+  .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .error-msg { color: var(--danger); font-size: 13px; padding: 4px 0; }
+  .empty { color: var(--muted); font-size: 13px; padding: 20px 0; text-align: center; }
+
+  /* toasts */
+  .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+  .toast { padding: 10px 16px; border-radius: 6px; font-size: 14px; color: #fff; animation: slideIn .3s ease; }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+  @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* loading spinner */
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #ccc; border-top-color: var(--accent); border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* KB checkbox list */
+  .kb-checklist { max-height: 160px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; padding: 8px; }
+  .kb-checklist-item { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 13px; }
+  .kb-checklist-item input { width: 14px; height: 14px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <h2 style="margin-bottom: 16px;">AiProject 管理控制台</h2>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('kb')">知识库管理</button>
+    <button class="tab-btn" onclick="switchTab('gen')">生成用例</button>
+  </div>
+
+  <!-- ============ Tab 1: KB Management ============ -->
+  <div id="panel-kb" class="panel active">
+    <div class="card">
+      <div class="card-title">项目 &amp; 知识库</div>
+      <div class="row">
+        <div class="field grow">
+          <label>项目 ID（X-Project-Id）</label>
+          <input id="kb-project-id" placeholder="e.g. eval-project" value="eval-project" onchange="refreshKBList()">
+        </div>
+        <div class="field grow">
+          <label>知识库</label>
+          <select id="kb-select" onchange="onKBSelect()"><option value="">-- 选择一个知识库 --</option></select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field grow">
+          <label>新建知识库</label>
+          <input id="new-kb-name" placeholder="输入新知识库名称">
+        </div>
+        <button class="btn btn-primary" onclick="createKB()">创建</button>
+        <button class="btn btn-danger" onclick="deleteKB()" style="margin-left:16px;">删除当前知识库</button>
+      </div>
+      <div class="hint">选择项目后自动加载知识库列表。创建 KB 后自动选中，即可上传文档。</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">上传文档</div>
+      <div class="row">
+        <label class="btn btn-outline" style="cursor:pointer;">
+          选择文件（PDF/TXT/MD）
+          <input type="file" id="upload-file" accept=".pdf,.txt,.md" style="display:none" onchange="onKBFileSelected()">
+        </label>
+        <span id="upload-filename" style="font-size:13px;color:var(--muted);">未选择文件</span>
+        <button class="btn btn-primary" onclick="uploadDoc()" id="btn-upload" disabled>上传到知识库</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">文档列表</div>
+      <div id="doc-list-container" class="doc-list"><div class="empty">请先选择知识库</div></div>
+    </div>
+
+  </div>
+
+  <!-- ============ Tab 2: Case Generation ============ -->
+  <div id="panel-gen" class="panel">
+    <div class="card">
+      <div class="card-title">输入</div>
+      <div class="row">
+        <div class="field grow" style="min-width: 300px;">
+          <label>问题描述</label>
+          <input id="gen-question" placeholder="e.g. 为新商户入驻功能设计测试用例">
+        </div>
+        <div class="field" style="min-width: 160px;">
+          <label>项目 ID</label>
+          <input id="gen-project-id" placeholder="X-Project-Id" value="eval-project" onchange="refreshGenKBList()">
+        </div>
+        <div class="field" style="width: 80px;">
+          <label>并发数</label>
+          <input id="gen-workers" type="number" min="1" max="10" value="3" style="width:80px;">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field grow">
+          <label>知识库（可选，勾选后检索业务领域知识作为背景）</label>
+          <div id="kb-checklist" class="kb-checklist"><div class="empty">请先输入项目 ID</div></div>
+          <div class="hint">不勾选任何知识库时，Agent 仅基于需求文档生成用例。</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field grow">
+          <label>需求文档（粘贴或上传 PDF/TXT/MD）</label>
+          <div class="row" style="margin-bottom:8px;">
+            <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+              选择文件
+              <input type="file" id="req-file" accept=".pdf,.txt,.md" style="display:none" onchange="onFileSelected('req')">
+            </label>
+            <span id="req-filename" style="font-size:13px;color:var(--muted);">未选择文件</span>
+            <button class="btn btn-primary btn-sm" onclick="uploadFile('req')" id="btn-req-upload" disabled>上传并填充</button>
+          </div>
+          <textarea id="gen-requirement" placeholder="粘贴需求文档内容，或使用上方按钮上传文件"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field grow">
+          <label>参考用例（粘贴或上传 PDF/TXT/MD，可多次追加）</label>
+          <div class="row" style="margin-bottom:8px;">
+            <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+              选择文件
+              <input type="file" id="ref-file" accept=".pdf,.txt,.md" style="display:none" onchange="onFileSelected('ref')">
+            </label>
+            <span id="ref-filename" style="font-size:13px;color:var(--muted);">未选择文件</span>
+            <button class="btn btn-primary btn-sm" onclick="uploadFile('ref')" id="btn-ref-upload" disabled>上传并填充</button>
+          </div>
+          <textarea id="gen-reference" placeholder="粘贴参考用例文本（格式范例），或使用上方按钮上传文件&#10;可多次上传，内容将追加"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn btn-primary" onclick="startGeneration()" id="btn-generate">生成用例</button>
+        <button class="btn btn-outline" onclick="cancelGeneration()" id="btn-cancel" style="display:none;">取消</button>
+      </div>
+    </div>
+
+    <div class="card" id="progress-card" style="display:none;">
+      <div class="card-title">进度</div>
+      <div id="progress-list"></div>
+    </div>
+
+    <div class="card" id="result-card" style="display:none;">
+      <div class="card-title">结果</div>
+      <div class="result-toolbar">
+        <span class="result-count" id="result-count"></span>
+        <button class="btn btn-outline btn-sm" onclick="exportMD()">导出 MD</button>
+        <button class="btn btn-outline btn-sm" onclick="copyJSON()">复制 JSON</button>
+      </div>
+      <div class="table-wrap">
+        <table id="result-table">
+          <thead><tr><th>#</th><th>标题</th><th>类型</th><th>前置条件</th><th>步骤</th><th>预期结果</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ── utilities ────────────────────────────────────────────────
+const $ = (s) => document.querySelector(s);
+const $$ = (s) => document.querySelectorAll(s);
+
+function toast(msg, type) {
+  type = type || 'success';
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function getHeaders() {
+  const pid = currentProjectId();
+  return {
+    'Content-Type': 'application/json',
+    'X-Project-Id': pid,
+  };
+}
+
+function currentProjectId() {
+  return $('#kb-project-id').value.trim() || 'default';
+}
+
+// ── tab switching ────────────────────────────────────────────
+function switchTab(name) {
+  $$('.tab-btn').forEach(b => b.classList.remove('active'));
+  $$('.panel').forEach(p => p.classList.remove('active'));
+  if (name === 'kb') {
+    $('.tab-btn:nth-child(1)').classList.add('active');
+    $('#panel-kb').classList.add('active');
+  } else {
+    $('.tab-btn:nth-child(2)').classList.add('active');
+    $('#panel-gen').classList.add('active');
+    refreshGenKBList();
+  }
+}
+
+// ────────────── Tab 1: KB Management ─────────────────────────
+
+function onKBSelect() {
+  refreshDocList();
+  onKBFileSelected();
+}
+
+async function refreshKBList() {
+  const pid = $('#kb-project-id').value.trim();
+  if (!pid) return;
+  try {
+    const resp = await fetch('/api/kb', { headers: getHeaders() });
+    if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
+    const data = await resp.json();
+    const sel = $('#kb-select');
+    sel.innerHTML = '<option value="">-- 选择知识库 --</option>';
+    (data.kbs || []).forEach(kb => {
+      const opt = document.createElement('option');
+      opt.value = kb;
+      opt.textContent = kb;
+      sel.appendChild(opt);
+    });
+    refreshDocList();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function createKB() {
+  const name = $('#new-kb-name').value.trim();
+  if (!name) { toast('请输入知识库名称', 'error'); return; }
+  try {
+    const resp = await fetch('/api/kb', {
+      method: 'POST', headers: getHeaders(),
+      body: JSON.stringify({ name }),
+    });
+    if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
+    toast('知识库创建成功');
+    $('#new-kb-name').value = '';
+    await refreshKBList();
+    $('#kb-select').value = name;
+    refreshDocList();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function deleteKB() {
+  const name = $('#kb-select').value;
+  if (!name) { toast('请先选择知识库', 'error'); return; }
+  if (!confirm('确认删除知识库 "' + name + '"？此操作不可恢复。')) return;
+  try {
+    const resp = await fetch('/api/kb/' + encodeURIComponent(name), {
+      method: 'DELETE', headers: getHeaders(),
+    });
+    if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
+    toast('已删除');
+    await refreshKBList();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+function onKBFileSelected() {
+  const f = $('#upload-file').files[0];
+  $('#upload-filename').textContent = f ? f.name : '未选择文件';
+  $('#btn-upload').disabled = !f || !$('#kb-select').value;
+}
+
+async function uploadDoc() {
+  const kbName = $('#kb-select').value;
+  const file = $('#upload-file').files[0];
+  if (!kbName || !file) { toast('请选择知识库和文件', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const pid = currentProjectId();
+    const resp = await fetch('/api/kb/' + encodeURIComponent(kbName) + '/docs', {
+      method: 'POST',
+      headers: { 'X-Project-Id': pid },
+      body: formData,
+    });
+    if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
+    toast('上传成功');
+    $('#upload-file').value = '';
+    onKBFileSelected();
+    refreshDocList();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function refreshDocList() {
+  const kbName = $('#kb-select').value;
+  const container = $('#doc-list-container');
+  if (!kbName) {
+    container.innerHTML = '<div class="empty">请先选择知识库</div>';
+    return;
+  }
+  try {
+    const resp = await fetch('/api/kb/' + encodeURIComponent(kbName) + '/docs', { headers: getHeaders() });
+    if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
+    const docs = (await resp.json()).docs || [];
+    if (docs.length === 0) {
+      container.innerHTML = '<div class="empty">暂无文档，请上传</div>';
+    } else {
+      container.innerHTML = docs.map(d => `
+        <div class="doc-item">
+          <span class="name">${escHtml(d)}</span>
+          <button class="btn btn-danger btn-sm" onclick="deleteDoc('${escAttr(d)}')">删除</button>
+        </div>
+      `).join('');
+    }
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function deleteDoc(filename) {
+  const kbName = $('#kb-select').value;
+  if (!confirm('确认删除 "' + filename + '"？')) return;
+  try {
+    const resp = await fetch('/api/kb/' + encodeURIComponent(kbName) + '/docs', {
+      method: 'DELETE', headers: getHeaders(),
+      body: JSON.stringify({ filename }),
+    });
+    if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
+    toast('已删除');
+    refreshDocList();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  return s.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+}
+
+// ────────────── Tab 2: Case Generation ───────────────────────
+
+let genAbortController = null;
+
+async function refreshGenKBList() {
+  const pid = $('#gen-project-id').value.trim();
+  const container = $('#kb-checklist');
+  if (!pid) {
+    container.innerHTML = '<div class="empty">请先输入项目 ID</div>';
+    return;
+  }
+  try {
+    const resp = await fetch('/api/kb', { headers: {
+      'Content-Type': 'application/json',
+      'X-Project-Id': pid,
+    }});
+    if (!resp.ok) return;
+    const data = await resp.json();
+    const kbs = data.kbs || [];
+    if (kbs.length === 0) {
+      container.innerHTML = '<div class="empty">该项目下暂无知识库，请先在 Tab 1 创建</div>';
+    } else {
+      container.innerHTML = kbs.map(kb => `
+        <div class="kb-checklist-item">
+          <input type="checkbox" value="${escAttr(kb)}" id="kb-${escAttr(kb)}">
+          <label for="kb-${escAttr(kb)}">${escHtml(kb)}</label>
+        </div>
+      `).join('');
+    }
+  } catch (e) { /* ignore */ }
+}
+
+function getSelectedKBs() {
+  const checks = $$('#kb-checklist input[type=checkbox]:checked');
+  return Array.from(checks).map(c => c.value);
+}
+
+function formatTime(seconds) {
+  if (seconds < 60) return Math.round(seconds) + 's';
+  return Math.floor(seconds / 60) + 'm ' + Math.round(seconds % 60) + 's';
+}
+
+const phaseNames = { phase0: 'Skill 选择', phase1: '测试点生成', phase2: '用例展开' };
+let phaseStartTimes = {};
+let progressContainer = null;
+
+function addProgress(icon, text, time) {
+  if (!progressContainer) return;
+  const div = document.createElement('div');
+  div.className = 'progress-item';
+  div.innerHTML = `<span class="icon">${icon}</span><span class="text">${text}</span>${time ? '<span class="time">'+time+'</span>' : ''}`;
+  progressContainer.appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth', block: 'end' });
+}
+
+function updateProgress(icon, text) {
+  // replace last progress item with same phase
+  if (!progressContainer) return;
+  const items = progressContainer.querySelectorAll('.progress-item');
+  if (items.length > 0) {
+    const last = items[items.length - 1];
+    last.querySelector('.text').textContent = text;
+  }
+}
+
+async function startGeneration() {
+  const question = $('#gen-question').value.trim();
+  const requirement = $('#gen-requirement').value.trim();
+  const referenceCases = $('#gen-reference').value.trim();
+  const pid = $('#gen-project-id').value.trim();
+  const workers = parseInt($('#gen-workers').value) || 3;
+  const kbNames = getSelectedKBs();
+
+  if (!question) { toast('请输入问题描述', 'error'); return; }
+
+  // Reset UI
+  $('#progress-card').style.display = 'block';
+  $('#result-card').style.display = 'none';
+  progressContainer = $('#progress-list');
+  progressContainer.innerHTML = '';
+  phaseStartTimes = {};
+  genAbortController = new AbortController();
+
+  $('#btn-generate').disabled = true;
+  $('#btn-generate').textContent = '生成中...';
+  $('#btn-cancel').style.display = 'inline-block';
+
+  try {
+    const resp = await fetch('/api/ask/stream', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Project-Id': pid,
+      },
+      body: JSON.stringify({
+        question,
+        requirement_doc: requirement || undefined,
+        reference_cases: referenceCases || undefined,
+        kb_names: kbNames,
+      }),
+      signal: genAbortController.signal,
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail || 'HTTP ' + resp.status);
+    }
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const jsonStr = line.slice(6).trim();
+        if (!jsonStr) continue;
+        try {
+          handleSSEEvent(JSON.parse(jsonStr));
+        } catch (e) { console.warn('SSE parse error:', e); }
+      }
+    }
+  } catch (e) {
+    if (e.name === 'AbortError') {
+      addProgress('⏹', '已取消');
+    } else {
+      addProgress('❌', '错误: ' + e.message);
+      toast(e.message, 'error');
+    }
+  } finally {
+    genAbortController = null;
+    $('#btn-generate').disabled = false;
+    $('#btn-generate').textContent = '生成用例';
+    $('#btn-cancel').style.display = 'none';
+  }
+}
+
+function handleSSEEvent(event) {
+  const { event: type, phase, data } = event;
+
+  if (type === 'phase_start') {
+    phaseStartTimes[phase] = Date.now();
+    addProgress('⏳', phaseNames[phase] || phase, '');
+  } else if (type === 'phase_end') {
+    const elapsed = phaseStartTimes[phase]
+      ? formatTime((Date.now() - phaseStartTimes[phase]) / 1000) : '';
+    const extra = data && data.selected_skills
+      ? ' — 选中: ' + data.selected_skills.join(', ')
+      : data && data.total_test_points
+        ? ' — 共 ' + data.total_test_points + ' 个测试点'
+        : '';
+    addProgress('✅', (phaseNames[phase] || phase) + extra, elapsed);
+  } else if (type === 'batch_done') {
+    const elapsed = phaseStartTimes['phase1']
+      ? formatTime((Date.now() - phaseStartTimes['phase1']) / 1000) : '';
+    addProgress('  📦', '批次 ' + data.batch + ' ✓ (' + data.test_points + ' 个测试点)', elapsed);
+  } else if (type === 'batch_error') {
+    addProgress('  ⚠', '批次 ' + data.batch + ' 失败');
+  } else if (type === 'chunk_done') {
+    const elapsed = phaseStartTimes['phase2']
+      ? formatTime((Date.now() - phaseStartTimes['phase2']) / 1000) : '';
+    addProgress('  📋', '展开 ' + data.chunk + '/' + data.total + ' (' + data.cases + ' 条用例)', elapsed);
+  } else if (type === 'chunk_error') {
+    addProgress('  ⚠', '展开 ' + data.chunk + '/' + data.total + ' 失败');
+  } else if (type === 'done') {
+    const totalElapsed = phaseStartTimes['phase0']
+      ? formatTime((Date.now() - phaseStartTimes['phase0']) / 1000) : '';
+    const meta = data.metadata || {};
+    addProgress('🎉', '完成! ' + (meta.test_cases_count || 0) + ' 条用例, '
+      + (meta.test_points_count || 0) + ' 个测试点', totalElapsed);
+    if (data.answer) renderResults(data.answer, meta);
+  } else if (type === 'cancelled') {
+    addProgress('⏹', '已取消');
+  } else if (type === 'error') {
+    addProgress('❌', '错误: ' + (data.message || '未知错误'));
+  }
+}
+
+function cancelGeneration() {
+  if (genAbortController) {
+    genAbortController.abort();
+    addProgress('⏹', '正在取消...');
+  }
+}
+
+let lastResults = [];
+
+function renderResults(answerJson, meta) {
+  try {
+    lastResults = JSON.parse(answerJson);
+  } catch (e) {
+    lastResults = [];
+  }
+
+  $('#result-card').style.display = 'block';
+  $('#result-count').textContent = '共 ' + lastResults.length + ' 条用例';
+
+  const tbody = $('#result-table tbody');
+  tbody.innerHTML = lastResults.map((c, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td>${escHtml(c.title || c.name || '')}</td>
+      <td>${escHtml(c.type || c.category || '')}</td>
+      <td>${escHtml(c.precondition || '')}</td>
+      <td>${escHtml(typeof c.steps === 'string' ? c.steps : JSON.stringify(c.steps || ''))}</td>
+      <td>${escHtml(typeof c.expected === 'string' ? c.expected : JSON.stringify(c.expected || ''))}</td>
+    </tr>
+  `).join('');
+}
+
+function exportMD() {
+  if (lastResults.length === 0) { toast('没有用例可导出', 'error'); return; }
+  const lines = ['# 测试用例', ''];
+  lastResults.forEach((c, i) => {
+    lines.push('## ' + (i + 1) + '. ' + (c.title || c.name || '未命名'));
+    if (c.type || c.category) lines.push('- **类型**: ' + (c.type || c.category));
+    if (c.precondition) lines.push('- **前置条件**: ' + c.precondition);
+    if (c.steps) lines.push('- **步骤**: ' + (typeof c.steps === 'string' ? c.steps.replace(/\n/g, '\n  ') : JSON.stringify(c.steps)));
+    if (c.expected) lines.push('- **预期结果**: ' + (typeof c.expected === 'string' ? c.expected.replace(/\n/g, '\n  ') : JSON.stringify(c.expected)));
+    lines.push('');
+  });
+  const blob = new Blob([lines.join('\n')], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'testcases_' + new Date().toISOString().slice(0,10) + '.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('已导出');
+}
+
+function copyJSON() {
+  if (lastResults.length === 0) { toast('没有用例可复制', 'error'); return; }
+  navigator.clipboard.writeText(JSON.stringify(lastResults, null, 2)).then(
+    () => toast('已复制到剪贴板'),
+    () => toast('复制失败', 'error')
+  );
+}
+
+// ── Tab 2: file upload handlers (req / ref) ────────────────
+
+const UPLOAD_AREAS = {
+  req: { file: 'req-file', filename: 'req-filename', btn: 'btn-req-upload', ta: 'gen-requirement' },
+  ref: { file: 'ref-file', filename: 'ref-filename', btn: 'btn-ref-upload', ta: 'gen-reference' },
+};
+
+function onFileSelected(area) {
+  const ids = UPLOAD_AREAS[area];
+  const f = $('#' + ids.file).files[0];
+  $('#' + ids.filename).textContent = f ? f.name : '未选择文件';
+  $('#' + ids.btn).disabled = !f;
+}
+
+async function uploadFile(area) {
+  const ids = UPLOAD_AREAS[area];
+  const fileInput = $('#' + ids.file);
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const btn = $('#' + ids.btn);
+  btn.disabled = true;
+  btn.textContent = '解析中...';
+
+  try {
+    let text;
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'txt' || ext === 'md') {
+      text = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsText(file);
+      });
+    } else {
+      const formData = new FormData();
+      formData.append('file', file);
+      const resp = await fetch('/api/parse-doc', { method: 'POST', body: formData });
+      if (!resp.ok) throw new Error((await resp.json()).detail || '解析失败');
+      text = (await resp.json()).text;
+    }
+
+    const ta = $('#' + ids.ta);
+    const existing = ta.value.trim();
+    ta.value = existing ? existing + '\n\n' + text : text;
+    toast('已填充: ' + file.name);
+
+    fileInput.value = '';
+    onFileSelected(area);
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '上传并填充';
+  }
+}
+
+// ── init ─────────────────────────────────────────────────────
+refreshKBList();
+</script>
+</body>
+</html>

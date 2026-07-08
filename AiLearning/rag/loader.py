@@ -7,6 +7,7 @@ from langchain_community.document_loaders import PyPDFLoader, TextLoader
 LOADER_MAP = {
     ".pdf": PyPDFLoader,
     ".txt": TextLoader,
+    ".md": TextLoader,
 }
 
 

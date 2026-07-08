@@ -1,4 +1,5 @@
 import logging
+from typing import Generator
 
 from AiLearning.agents.base import AgentResponse
 from AiLearning.agents.learning_agent import LearningAgent
@@ -102,6 +103,49 @@ def dispatch(question: str, app: str | None, **kwargs) -> AgentResponse:
     if agent is None:
         agent = _get_agent("rag")
     return agent.execute(question, **kwargs)
+
+
+def dispatch_stream(question: str, app: str | None,
+                    cancelled=None, **kwargs) -> Generator[dict, None, None]:
+    """SSE streaming 版 dispatch，路由逻辑同 dispatch()，但 yield 进度事件。
+
+    路由到 agent.execute_stream()（如 TestCaseDesignAgent）。若 agent 不支持
+    streaming，则降级为 execute() + 单次 done 事件。
+    """
+    _init_registry()
+
+    # 三级路由（同 dispatch）
+    if app:
+        agent = _get_agent(app)
+        if agent is None:
+            yield {"event": "error", "data": {"message": f"Unknown agent: {app!r}"}}
+            return
+    else:
+        agent_name = _keyword_detect(question)
+        if agent_name:
+            agent = _get_agent(agent_name)
+        else:
+            agent_name = _llm_detect_intent(question)
+            agent = _get_agent(agent_name)
+        if agent is None:
+            agent = _get_agent("rag")
+
+    # 调用 streaming 或降级
+    stream_method = getattr(agent, "execute_stream", None)
+    if stream_method:
+        yield from stream_method(question, cancelled=cancelled, **kwargs)
+    else:
+        try:
+            result = agent.execute(question, **kwargs)
+            yield {
+                "event": "done",
+                "data": {
+                    "answer": result.answer,
+                    "metadata": result.metadata,
+                },
+            }
+        except Exception as e:
+            yield {"event": "error", "data": {"message": str(e)}}
 
 
 def registered_agents() -> list[str]:

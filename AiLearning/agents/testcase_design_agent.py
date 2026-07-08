@@ -1,7 +1,10 @@
 import json
 import logging
 import re
+import threading
+import time as time_module
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import Generator
 
 from langchain_core.documents import Document
 
@@ -11,9 +14,8 @@ from AiLearning.prompts.testcase_design import (
     DEFAULT_SKILL_SELECTION_PROMPT,
     DEFAULT_TESTPOINT_PROMPT,
 )
-from AiLearning.rag.retriever import retrieve
+from AiLearning.rag.retriever import retrieve, retrieve_from_multiple_collections
 from AiLearning.rag.splitter import split_documents
-from AiLearning.rag.vector_store import get_by_filename
 from AiLearning.service import get_client
 from AiLearning.skills import SKILL_BATCHES, SKILL_REGISTRY, build_skills_catalog
 
@@ -29,9 +31,9 @@ class TestCaseDesignAgent(BaseAgent):
 
     execute() 参数：
       - question: 用户问题（如"为批量入驻功能设计测试用例"）
-      - collection_name: KB 集合名（检索业务领域文档）
+      - collection_name: 单个 KB 集合名（兼容旧调用）
+      - collection_names: 多个 KB 集合名列表，支持跨库 RRF 融合检索
       - requirement_doc: 需求文档全文（实时上传，split 后直接使用）
-      - reference_case_filenames: 参考用例文件名列表（可选，按名从 KB 获取）
     """
 
     @property
@@ -41,9 +43,10 @@ class TestCaseDesignAgent(BaseAgent):
     # ── execute ──────────────────────────────────────────────────
 
     def execute(self, question: str, **kwargs) -> AgentResponse:
+        collection_names = kwargs.get("collection_names")
         collection_name = kwargs.get("collection_name")
         requirement_doc = kwargs.get("requirement_doc") or ""
-        ref_filenames = kwargs.get("reference_case_filenames", [])
+        reference_cases = kwargs.get("reference_cases") or ""
         top_k = kwargs.get("top_k", 10)
         max_workers = kwargs.get("max_workers", 3)
 
@@ -52,13 +55,12 @@ class TestCaseDesignAgent(BaseAgent):
 
         # ── 2. 检索业务文档（用 question + 需求前 500 字增强检索） ──
         business_docs = []
-        if collection_name:
-            business_query = f"{question}\n{requirement_doc[:500]}".strip()
+        business_query = f"{question}\n{requirement_doc[:500]}".strip()
+        if collection_names:
+            business_docs = retrieve_from_multiple_collections(business_query, collection_names, top_k=top_k)
+        elif collection_name:
             business_docs = retrieve(business_query, collection_name, top_k=top_k)
         business_context = self._build_context(business_docs)
-
-        # ── 3. 获取参考用例（按文件名，仅 Phase 2 使用） ──
-        reference_cases = self._fetch_reference_cases(ref_filenames, collection_name)
 
         main_context = (
             f"## 业务领域知识（你已掌握的背景）\n{business_context}\n\n"
@@ -152,9 +154,222 @@ class TestCaseDesignAgent(BaseAgent):
                 "selected_skills": selected_names,
                 "test_points_count": len(all_test_points),
                 "batches_used": len(batches),
-                "reference_cases_count": len(ref_filenames) if ref_filenames else 0,
             },
         )
+
+    # ── execute_stream ────────────────────────────────────────────
+
+    def execute_stream(self, question: str,
+                       cancelled: threading.Event | None = None,
+                       **kwargs) -> Generator[dict, None, None]:
+        """SSE streaming 版用例生成，yield 进度事件 dict。
+
+        每完成一个 phase 或并行任务 batch/chunk 即推送进度。
+        外部可通过 cancelled Event 中止流，在 as_completed 检查点退出。
+        保证必有终止事件：done / cancelled / error。
+        """
+        if cancelled is None:
+            cancelled = threading.Event()
+
+        collection_names = kwargs.get("collection_names")
+        collection_name = kwargs.get("collection_name")
+        requirement_doc = kwargs.get("requirement_doc") or ""
+        reference_cases = kwargs.get("reference_cases") or ""
+        top_k = kwargs.get("top_k", 10)
+        max_workers = kwargs.get("max_workers", 3)
+        t0 = time_module.perf_counter()
+
+        try:
+            # ── 准备阶段（同步，不推送事件） ──
+            requirement_context = self._process_requirement_doc(requirement_doc)
+
+            business_docs = []
+            business_query = f"{question}\n{requirement_doc[:500]}".strip()
+            if collection_names:
+                business_docs = retrieve_from_multiple_collections(business_query, collection_names, top_k=top_k)
+            elif collection_name:
+                business_docs = retrieve(business_query, collection_name, top_k=top_k)
+            business_context = self._build_context(business_docs)
+
+            main_context = f"## 业务领域知识（你已掌握的背景）\n{business_context}\n\n"
+
+            client = get_client()
+
+            # ═════════════════════════════════════════════════════
+            # Phase 0: Skill 选择（1 次 LLM 调用）
+            # ═════════════════════════════════════════════════════
+            if cancelled.is_set():
+                yield {"event": "cancelled", "data": {}}
+                return
+
+            yield {"event": "phase_start", "phase": "phase0", "data": {}}
+            try:
+                selected_names = self._select_skills(
+                    client, main_context, requirement_context, question
+                )
+                yield {
+                    "event": "phase_end", "phase": "phase0",
+                    "data": {"selected_skills": selected_names},
+                }
+            except Exception:
+                logger.exception("Phase 0: Skill 选择失败")
+                yield {"event": "error", "data": {"message": "Skill 选择失败，请检查输入或重试"}}
+                return
+
+            # ═════════════════════════════════════════════════════
+            # Phase 1: 测试点生成（并行，按批次）
+            # ═════════════════════════════════════════════════════
+            if cancelled.is_set():
+                yield {"event": "cancelled", "data": {}}
+                return
+
+            all_test_points: list[dict] = []
+            batches = self._build_batches(selected_names)
+
+            if batches:
+                yield {
+                    "event": "phase_start", "phase": "phase1",
+                    "data": {"batches": [b["group_name"] for b in batches]},
+                }
+
+                with ThreadPoolExecutor(max_workers=min(max_workers, len(batches))) as executor:
+                    future_to_batch = {
+                        executor.submit(
+                            self._generate_test_points,
+                            client, main_context, requirement_context, batch,
+                        ): batch
+                        for batch in batches
+                    }
+                    for future in as_completed(future_to_batch):
+                        batch = future_to_batch[future]
+
+                        if cancelled.is_set():
+                            executor.shutdown(wait=False, cancel_futures=True)
+                            break
+
+                        try:
+                            points = future.result()
+                            all_test_points.extend(points)
+                            yield {
+                                "event": "batch_done", "phase": "phase1",
+                                "data": {
+                                    "batch": batch["group_name"],
+                                    "test_points": len(points),
+                                },
+                            }
+                        except Exception:
+                            logger.exception("批次 %s 生成测试点失败", batch["group_name"])
+                            yield {
+                                "event": "batch_error", "phase": "phase1",
+                                "data": {"batch": batch["group_name"]},
+                            }
+
+                if cancelled.is_set():
+                    yield {"event": "cancelled", "data": {}}
+                    return
+
+                yield {
+                    "event": "phase_end", "phase": "phase1",
+                    "data": {"total_test_points": len(all_test_points)},
+                }
+
+            # ═════════════════════════════════════════════════════
+            # Phase 2: 用例展开（并行，每批 ≤5 个测试点）
+            # ═════════════════════════════════════════════════════
+            if not all_test_points:
+                yield {"event": "done", "data": {"answer": "[]", "metadata": {}}}
+                return
+
+            if cancelled.is_set():
+                yield {"event": "cancelled", "data": {}}
+                return
+
+            combined_rules = self._build_case_rules(selected_names)
+            chunk_size = 5
+            chunks = [
+                (i, all_test_points[i:i + chunk_size])
+                for i in range(0, len(all_test_points), chunk_size)
+            ]
+
+            yield {
+                "event": "phase_start", "phase": "phase2",
+                "data": {"total_chunks": len(chunks)},
+            }
+
+            all_cases: list[dict] = []
+            completed = 0
+
+            with ThreadPoolExecutor(max_workers=max_workers) as executor:
+                future_to_idx = {
+                    executor.submit(
+                        self._expand_test_cases,
+                        client, main_context, requirement_context,
+                        chunk, combined_rules, reference_cases,
+                    ): idx
+                    for idx, chunk in chunks
+                }
+                results_by_idx: dict[int, list[dict]] = {}
+
+                for future in as_completed(future_to_idx):
+                    idx = future_to_idx[future]
+
+                    if cancelled.is_set():
+                        executor.shutdown(wait=False, cancel_futures=True)
+                        break
+
+                    try:
+                        cases = future.result()
+                        results_by_idx[idx] = cases
+                        completed += 1
+                        yield {
+                            "event": "chunk_done", "phase": "phase2",
+                            "data": {"chunk": completed, "total": len(chunks),
+                                     "cases": len(cases)},
+                        }
+                    except Exception:
+                        logger.exception("测试点 chunk %d 展开失败", idx)
+                        completed += 1
+                        yield {
+                            "event": "chunk_error", "phase": "phase2",
+                            "data": {"chunk": completed, "total": len(chunks)},
+                        }
+
+            if cancelled.is_set():
+                yield {"event": "cancelled", "data": {}}
+                return
+
+            # 按索引排序合并
+            for idx in sorted(results_by_idx):
+                all_cases.extend(results_by_idx[idx])
+
+            # 规范化 expected/precondition
+            for case in all_cases:
+                for field in ("expected", "precondition"):
+                    if isinstance(case.get(field), list):
+                        case[field] = "\n".join(str(item) for item in case[field])
+
+            answer = json.dumps(all_cases, ensure_ascii=False, indent=2)
+            elapsed = round(time_module.perf_counter() - t0, 1)
+            yield {
+                "event": "done",
+                "data": {
+                    "answer": answer,
+                    "metadata": {
+                        "selected_skills": selected_names,
+                        "test_points_count": len(all_test_points),
+                        "test_cases_count": len(all_cases),
+                        "batches_used": len(batches),
+                        "elapsed_seconds": elapsed,
+                    },
+                },
+            }
+
+        except GeneratorExit:
+            logger.info("execute_stream 客户端断开，流终止")
+            yield {"event": "cancelled", "data": {}}
+        except Exception as e:
+            logger.exception("execute_stream 未预期异常")
+            yield {"event": "error", "data": {"message": str(e)}}
 
     # ── helpers ──────────────────────────────────────────────────
 
@@ -166,19 +381,6 @@ class TestCaseDesignAgent(BaseAgent):
         docs = [Document(page_content=text)]
         chunks = split_documents(docs, chunk_size=800, chunk_overlap=100)
         return "\n\n".join(c.page_content for c in chunks)
-
-    @staticmethod
-    def _fetch_reference_cases(
-        filenames: list[str], collection_name: str | None
-    ) -> str:
-        """按文件名从 KB 获取参考用例，返回拼接文本。"""
-        if not filenames or not collection_name:
-            return ""
-        all_chunks: list[str] = []
-        for filename in filenames:
-            chunks = get_by_filename(collection_name, filename)
-            all_chunks.extend(chunks)
-        return "\n\n".join(all_chunks)
 
     @staticmethod
     def _parse_json_list(raw: str) -> list:
