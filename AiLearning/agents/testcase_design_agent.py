@@ -11,13 +11,20 @@ from langchain_core.documents import Document
 from AiLearning.agents.base import AgentResponse, BaseAgent
 from AiLearning.prompts.testcase_design import (
     DEFAULT_EXPANSION_PROMPT,
+    DEFAULT_IMPACT_ANALYSIS_PROMPT,
     DEFAULT_SKILL_SELECTION_PROMPT,
     DEFAULT_TESTPOINT_PROMPT,
 )
 from AiLearning.rag.retriever import retrieve, retrieve_from_multiple_collections
 from AiLearning.rag.splitter import split_documents
 from AiLearning.service import get_client
-from AiLearning.skills import SKILL_BATCHES, SKILL_REGISTRY, build_skills_catalog
+from AiLearning.skills import (
+    SKILL_BATCHES,
+    SKILL_REGISTRY,
+    build_skills_catalog,
+    model_to_dict,
+)
+from AiLearning.skills.business_model import ModelingContext
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 logger = logging.getLogger(__name__)
@@ -46,16 +53,51 @@ class TestCaseDesignAgent(BaseAgent):
         collection_names = kwargs.get("collection_names")
         collection_name = kwargs.get("collection_name")
         requirement_doc = kwargs.get("requirement_doc") or ""
+        tech_doc = kwargs.get("tech_doc") or ""
         reference_cases = kwargs.get("reference_cases") or ""
         top_k = kwargs.get("top_k", 10)
         max_workers = kwargs.get("max_workers", 3)
+        modeling: ModelingContext = kwargs.get("modeling", ModelingContext())
 
-        # ── 1. 处理需求文档（split 后全部使用，不经检索） ──
-        requirement_context = self._process_requirement_doc(requirement_doc)
+        # ── 1. 处理需求文档（合并需求文档与技术文档）──
+        combined_requirement = f"{requirement_doc}\n\n---\n\n{tech_doc}" if tech_doc else requirement_doc
+        requirement_context = self._process_requirement_doc(combined_requirement)
 
-        # ── 2. 检索业务文档（用 question + 需求前 500 字增强检索） ──
+        client = get_client()
+        impact_analysis = None
+        regression_modules = ""
+        model_rules = None
+
+        if modeling.enabled and modeling.previous_model:
+            # ═════════════════════════════════════════════════════
+            # Phase -0.5: 影响分析
+            # ═════════════════════════════════════════════════════
+            try:
+                impact_analysis = self._run_impact_analysis(
+                    client,
+                    previous_model=modeling.previous_model,
+                    current_requirement=requirement_context,
+                )
+                regression_modules = " ".join(impact_analysis.get("regression_scope", []))
+            except Exception:
+                logger.exception("Phase -0.5: 影响分析失败，继续执行主流程")
+
+            # Phase 0 用模型规则选 Skill
+            rules = modeling.previous_model.get("rules", [])
+            model_rules = "\n".join(
+                f"- {r.get('name', '?')}: {r.get('condition', '?')} "
+                f"[related_skill={r.get('related_skill', '?')}] "
+                f"risk={r.get('risk', '?')}"
+                for r in rules
+            ) if rules else None
+
+        # ── 2. RAG 检索（用 regression_scope 增强 query）──
         business_docs = []
-        business_query = f"{question}\n{requirement_doc[:500]}".strip()
+        if regression_modules:
+            business_query = f"{question} {regression_modules}".strip()
+        else:
+            business_query = f"{question}\n{combined_requirement[:500]}".strip()
+
         if collection_names:
             business_docs = retrieve_from_multiple_collections(business_query, collection_names, top_k=top_k)
         elif collection_name:
@@ -66,18 +108,18 @@ class TestCaseDesignAgent(BaseAgent):
             f"## 业务领域知识（你已掌握的背景）\n{business_context}\n\n"
         )
 
-        client = get_client()
         all_test_points: list[dict] = []
         all_cases: list[dict] = []
         selected_names: list[str] = []
         batches: list[dict] = []
 
         # ═══════════════════════════════════════════════════════
-        # Phase 0: Skill 选择（1 次 LLM 调用）
+        # Phase 0: Skill 选择
         # ═══════════════════════════════════════════════════════
         try:
             selected_names = self._select_skills(
-                client, main_context, requirement_context, question
+                client, main_context, requirement_context, question,
+                model_rules=model_rules,
             )
         except Exception:
             logger.exception("Phase 0: Skill 选择失败")
@@ -154,6 +196,7 @@ class TestCaseDesignAgent(BaseAgent):
                 "selected_skills": selected_names,
                 "test_points_count": len(all_test_points),
                 "batches_used": len(batches),
+                "impact_analysis": model_to_dict(impact_analysis) if impact_analysis else None,
             },
         )
 
@@ -174,17 +217,67 @@ class TestCaseDesignAgent(BaseAgent):
         collection_names = kwargs.get("collection_names")
         collection_name = kwargs.get("collection_name")
         requirement_doc = kwargs.get("requirement_doc") or ""
+        tech_doc = kwargs.get("tech_doc") or ""
         reference_cases = kwargs.get("reference_cases") or ""
         top_k = kwargs.get("top_k", 10)
         max_workers = kwargs.get("max_workers", 3)
+        modeling: ModelingContext = kwargs.get("modeling", ModelingContext())
         t0 = time_module.perf_counter()
 
         try:
-            # ── 准备阶段（同步，不推送事件） ──
-            requirement_context = self._process_requirement_doc(requirement_doc)
+            # ── 准备阶段 ──
+            combined_requirement = f"{requirement_doc}\n\n---\n\n{tech_doc}" if tech_doc else requirement_doc
+            requirement_context = self._process_requirement_doc(combined_requirement)
+
+            client = get_client()
+            impact_analysis = None
+            regression_modules = ""
+            model_rules = None
+
+            # ═════════════════════════════════════════════════════
+            # Phase -0.5: 影响分析（可选，失败不中断）
+            # ═════════════════════════════════════════════════════
+            if modeling.enabled and modeling.previous_model:
+                if cancelled.is_set():
+                    yield {"event": "cancelled", "data": {}}
+                    return
+
+                yield {"event": "phase_start", "phase": "phase-0.5", "data": {}}
+                try:
+                    impact_analysis = self._run_impact_analysis(
+                        client,
+                        previous_model=modeling.previous_model,
+                        current_requirement=requirement_context,
+                    )
+                    regression_modules = " ".join(impact_analysis.get("regression_scope", []))
+                    yield {
+                        "event": "impact_done",
+                        "data": {"analysis": model_to_dict(impact_analysis)},
+                    }
+                except Exception:
+                    logger.exception("Phase -0.5: 影响分析失败，继续执行主流程")
+                    yield {
+                        "event": "impact_error",
+                        "data": {"message": "影响分析失败，已跳过"},
+                    }
+
+                # 提取模型规则用于 Phase 0
+                rules = modeling.previous_model.get("rules", [])
+                if rules:
+                    model_rules = "\n".join(
+                        f"- {r.get('name', '?')}: {r.get('condition', '?')} "
+                        f"[related_skill={r.get('related_skill', '?')}] "
+                        f"risk={r.get('risk', '?')}"
+                        for r in rules
+                    )
+
+            # ── RAG 检索（用 regression_scope 增强 query）──
+            if regression_modules:
+                business_query = f"{question} {regression_modules}".strip()
+            else:
+                business_query = f"{question}\n{combined_requirement[:500]}".strip()
 
             business_docs = []
-            business_query = f"{question}\n{requirement_doc[:500]}".strip()
             if collection_names:
                 business_docs = retrieve_from_multiple_collections(business_query, collection_names, top_k=top_k)
             elif collection_name:
@@ -193,10 +286,8 @@ class TestCaseDesignAgent(BaseAgent):
 
             main_context = f"## 业务领域知识（你已掌握的背景）\n{business_context}\n\n"
 
-            client = get_client()
-
             # ═════════════════════════════════════════════════════
-            # Phase 0: Skill 选择（1 次 LLM 调用）
+            # Phase 0: Skill 选择
             # ═════════════════════════════════════════════════════
             if cancelled.is_set():
                 yield {"event": "cancelled", "data": {}}
@@ -205,7 +296,8 @@ class TestCaseDesignAgent(BaseAgent):
             yield {"event": "phase_start", "phase": "phase0", "data": {}}
             try:
                 selected_names = self._select_skills(
-                    client, main_context, requirement_context, question
+                    client, main_context, requirement_context, question,
+                    model_rules=model_rules,
                 )
                 yield {
                     "event": "phase_end", "phase": "phase0",
@@ -360,6 +452,7 @@ class TestCaseDesignAgent(BaseAgent):
                         "test_cases_count": len(all_cases),
                         "batches_used": len(batches),
                         "elapsed_seconds": elapsed,
+                        "impact_analysis": model_to_dict(impact_analysis) if impact_analysis else None,
                     },
                 },
             }
@@ -381,6 +474,29 @@ class TestCaseDesignAgent(BaseAgent):
         docs = [Document(page_content=text)]
         chunks = split_documents(docs, chunk_size=800, chunk_overlap=100)
         return "\n\n".join(c.page_content for c in chunks)
+
+    @staticmethod
+    def _parse_json_dict(raw: str) -> dict:
+        """从 LLM 响应中安全提取 JSON 对象（3 层 fallback）。"""
+        text = raw.strip()
+        try:
+            return json.loads(text)
+        except json.JSONDecodeError:
+            pass
+        m = re.search(r"```(?:json)?\s*([\s\S]*?)```", text)
+        if m:
+            try:
+                return json.loads(m.group(1).strip())
+            except json.JSONDecodeError:
+                pass
+        m = re.search(r"\{[\s\S]*\}", text)
+        if m:
+            try:
+                return json.loads(m.group(0))
+            except json.JSONDecodeError:
+                pass
+        logger.warning("无法从 LLM 响应中解析 JSON 对象: %s", text[:200])
+        return {}
 
     @staticmethod
     def _parse_json_list(raw: str) -> list:
@@ -414,6 +530,27 @@ class TestCaseDesignAgent(BaseAgent):
         logger.warning("无法从 LLM 响应中解析 JSON 数组: %s", text[:200])
         return []
 
+    # ── Phase -0.5: 影响分析 ────────────────────────────────────
+
+    def _run_impact_analysis(self, client, previous_model: dict,
+                             current_requirement: str) -> dict:
+        """基于已有业务模型，分析新需求影响范围。失败不中断主流程。"""
+        prompt = DEFAULT_IMPACT_ANALYSIS_PROMPT.format(
+            previous_model=json.dumps(previous_model, ensure_ascii=False, indent=2),
+            current_requirement=current_requirement,
+        )
+        response = self._chat_with_log(
+            client,
+            messages=[
+                {"role": "system", "content": DEFAULT_IMPACT_ANALYSIS_PROMPT.system},
+                {"role": "user", "content": prompt},
+            ],
+            phase="phase-0.5",
+            temperature=0,
+            max_tokens=4096,
+        )
+        return self._parse_json_dict(response)
+
     # ── Phase 0: Skill 选择 ──────────────────────────────────────
 
     def _chat_with_log(self, client, messages, phase: str, **chat_kwargs) -> str:
@@ -432,13 +569,23 @@ class TestCaseDesignAgent(BaseAgent):
         return content
 
     def _select_skills(self, client, main_context: str,
-                       requirement_context: str, question: str) -> list[str]:
-        prompt = DEFAULT_SKILL_SELECTION_PROMPT.format(
-            context=main_context,
-            requirement=requirement_context,
-            question=question,
-            skills_catalog=build_skills_catalog(),
-        )
+                       requirement_context: str, question: str,
+                       model_rules: str | None = None) -> list[str]:
+        """选择适用测试维度。有 model_rules 时用业务模型规则，否则用 RAG context。"""
+        if model_rules:
+            prompt = DEFAULT_SKILL_SELECTION_PROMPT.format_with_model(
+                model_rules=model_rules,
+                requirement=requirement_context,
+                question=question,
+                skills_catalog=build_skills_catalog(),
+            )
+        else:
+            prompt = DEFAULT_SKILL_SELECTION_PROMPT.format(
+                context=main_context,
+                requirement=requirement_context,
+                question=question,
+                skills_catalog=build_skills_catalog(),
+            )
         response = self._chat_with_log(
             client,
             messages=[

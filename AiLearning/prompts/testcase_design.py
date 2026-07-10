@@ -8,7 +8,7 @@ class SkillSelectionPrompt:
 
     system: str = (
         "你是一个测试架构师，深入掌握该业务领域。"
-        "你已经阅读了业务知识文档和技术需求文档，现在需要判断从哪些测试维度进行用例设计。"
+        "你已经阅读了业务领域知识和需求文档，现在需要判断从哪些测试维度进行用例设计。"
     )
 
     template: str = (
@@ -26,9 +26,34 @@ class SkillSelectionPrompt:
         "4. 只输出 JSON 数组，不要包含其他文字"
     )
 
+    template_with_model: str = (
+        "## 业务规则（已建模的领域知识）\n"
+        "{model_rules}\n\n"
+        "## 新需求\n"
+        "{requirement}\n\n"
+        "## 可选测试维度\n"
+        "{skills_catalog}\n\n"
+        "用户需求：{question}\n\n"
+        "要求：\n"
+        "1. 每条业务规则标注了 related_skill，以此为参考判断哪些维度适用于新需求\n"
+        "2. 返回 JSON 数组，包含选中的 skill 的 name 字段\n"
+        '3. 格式示例：["boundary_value", "permission_security"]\n'
+        "4. 只输出 JSON 数组，不要包含其他文字"
+    )
+
     def format(self, context: str, requirement: str, question: str, skills_catalog: str) -> str:
         return self.template.format(
             context=context,
+            requirement=requirement,
+            question=question,
+            skills_catalog=skills_catalog,
+        )
+
+    def format_with_model(self, model_rules: str, requirement: str, question: str,
+                          skills_catalog: str) -> str:
+        """用业务模型的 rules 替代 RAG context 进行 Skill 选择。"""
+        return self.template_with_model.format(
+            model_rules=model_rules,
             requirement=requirement,
             question=question,
             skills_catalog=skills_catalog,
@@ -120,7 +145,51 @@ class TestCaseExpansionPrompt:
         )
 
 
+@dataclass(frozen=True)
+class ImpactAnalysisPrompt:
+    """Phase -0.5：基于已有业务模型，分析新需求影响哪些业务模块和回归范围。"""
+
+    system: str = (
+        "你是一个资深的测试架构师，擅长评估需求变更对已有业务模型的影响范围。"
+        "\n\n"
+        "已知一个知识库（KB）的业务模型代表当前系统的业务全貌，"
+        "分析「新传入的需求文档」会影响哪些业务模块。"
+        "\n\n"
+        "核心原则：\n"
+        "- KB 的业务模型是确定的，代表当前系统完整业务\n"
+        "- 新需求文档可能只描述增量变更，不会重复完整业务描述\n"
+        '- 只输出新需求中确实提到的变更点，不推测"可能"存在的变更\n'
+        "- 与已有模型一致的内容不算变更"
+        "\n\n"
+        "分析逻辑：\n"
+        "1. 逐条提取新需求文档中的变更（阈值调整、新增字段、新增约束、流程变化等）\n"
+        "2. 对每条变更，判断影响哪个已有实体/流程/规则\n"
+        "3. 根据变更点推导需要回归的测试模块\n"
+        "4. 如果新需求与已有模型完全无差异，no_impact=true"
+        "\n\n"
+        "输出要求：\n"
+        "- 只输出 JSON，不要有任何解释或 markdown 包裹"
+    )
+
+    template: str = (
+        "## 已有业务模型（此 KB 的业务全貌）\n"
+        "```json\n"
+        "{previous_model}\n"
+        "```\n\n"
+        "## 新需求文档（本次传入，可能只描述变更部分）\n"
+        "{current_requirement}\n\n"
+        "请输出变更影响分析 JSON（不要 markdown 包裹）："
+    )
+
+    def format(self, previous_model: str, current_requirement: str) -> str:
+        return self.template.format(
+            previous_model=previous_model,
+            current_requirement=current_requirement,
+        )
+
+
 # 默认实例（供 Agent 直接使用）
 DEFAULT_SKILL_SELECTION_PROMPT = SkillSelectionPrompt()
 DEFAULT_TESTPOINT_PROMPT = TestPointGenerationPrompt()
 DEFAULT_EXPANSION_PROMPT = TestCaseExpansionPrompt()
+DEFAULT_IMPACT_ANALYSIS_PROMPT = ImpactAnalysisPrompt()

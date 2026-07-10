@@ -15,10 +15,12 @@ from AiLearning.rag.bm25_store import build_index as build_bm25_index
 from AiLearning.rag.bm25_store import delete_index as delete_bm25_index
 from AiLearning.rag.embedder import embed_texts
 from AiLearning.rag.generator import generate
+from AiLearning.agents.modeling_agent import ModelingAgent
 from AiLearning.rag.loader import load_document
 from AiLearning.rag.retriever import retrieve
 from AiLearning.router.agent_router import dispatch, dispatch_stream
 from AiLearning.rag.splitter import split_documents
+from AiLearning.rag.model_store import delete_model, load_latest, list_versions, save_model
 from AiLearning.rag.vector_store import (
     collection_exists,
     delete_by_filename,
@@ -29,6 +31,7 @@ from AiLearning.rag.vector_store import (
     list_filenames,
     save_documents,
 )
+from AiLearning.skills.business_model import ModelingContext
 
 app = FastAPI(title="RAG API", version="1.0.0")
 
@@ -96,8 +99,28 @@ class AskRequest(BaseModel):
     question: str
     app: str | None = None
     requirement_doc: str | None = None
-    reference_cases: str | None = None  # 参考用例文本（风格范例，仅 Phase 2 使用）
-    kb_names: list[str] | None = None   # 指定 KB 名称列表，空列表=不检索，None=全部 KB
+    tech_doc: str | None = None           # 技术文档（接口文档、技术约束等），与需求文档合并
+    reference_cases: str | None = None    # 参考用例文本（风格范例，仅 Phase 2 使用）
+    kb_names: list[str] | None = None     # 指定 KB 名称列表，空列表=不检索，None=全部 KB
+    use_business_modeling: bool = False   # 是否启用 Phase -0.5 影响分析
+
+
+def _assemble_modeling(pid: str, kb_name: str | None, body: AskRequest) -> ModelingContext:
+    """根据请求参数和 KB 历史模型组装 ModelingContext。
+
+    kb_name 为 None 时（项目级多 KB 场景），不加载 previous_model。
+    """
+    if not body.use_business_modeling:
+        return ModelingContext()
+
+    previous = load_latest(pid, kb_name) if kb_name else None
+    if previous:
+        return ModelingContext(
+            enabled=True,
+            previous_model=previous["model"],
+            previous_requirement=previous["requirement"],
+        )
+    return ModelingContext(enabled=True)
 
 
 # ── health ──────────────────────────────────────────────────────────
@@ -224,16 +247,20 @@ def ask(
 ):
     pid = _require_project_id(project_id)
     collection_names = _resolve_collection_names(pid, body.kb_names, kb_name)
+    modeling = _assemble_modeling(pid, kb_name, body)
     try:
         response = dispatch(
             body.question,
             app=body.app,
             collection_names=collection_names,
             requirement_doc=body.requirement_doc,
+            tech_doc=body.tech_doc,
             reference_cases=body.reference_cases,
+            modeling=modeling,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
     return {
         "answer": response.answer,
         "agent": response.agent_name,
@@ -254,6 +281,7 @@ async def ask_stream(
     """
     pid = _require_project_id(project_id)
     collection_names = _resolve_collection_names(pid, body.kb_names, kb_name)
+    modeling = _assemble_modeling(pid, kb_name, body)
     cancelled = threading.Event()
 
     def generate():
@@ -264,7 +292,9 @@ async def ask_stream(
                 cancelled=cancelled,
                 collection_names=collection_names,
                 requirement_doc=body.requirement_doc,
-            reference_cases=body.reference_cases,
+                tech_doc=body.tech_doc,
+                reference_cases=body.reference_cases,
+                modeling=modeling,
             ):
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         except GeneratorExit:
@@ -293,13 +323,17 @@ def ask_project(
     collection_names = _resolve_collection_names(pid, body.kb_names)
     if not collection_names:
         raise HTTPException(status_code=404, detail="该项目下没有知识库")
+    # TODO: 多 KB 场景下，business_modeling 仅使用第一个 KB 的 previous_model
+    modeling = _assemble_modeling(pid, body.kb_names[0] if body.kb_names else None, body)
     try:
         response = dispatch(
             body.question,
             app=body.app,
             collection_names=collection_names,
             requirement_doc=body.requirement_doc,
+            tech_doc=body.tech_doc,
             reference_cases=body.reference_cases,
+            modeling=modeling,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -321,6 +355,8 @@ async def ask_project_stream(
     if not collection_names:
         raise HTTPException(status_code=404, detail="该项目下没有知识库")
 
+    # TODO: 多 KB 场景下，business_modeling 仅使用第一个 KB 的 previous_model
+    modeling = _assemble_modeling(pid, body.kb_names[0] if body.kb_names else None, body)
     cancelled = threading.Event()
 
     def generate():
@@ -331,7 +367,9 @@ async def ask_project_stream(
                 cancelled=cancelled,
                 collection_names=collection_names,
                 requirement_doc=body.requirement_doc,
-            reference_cases=body.reference_cases,
+                tech_doc=body.tech_doc,
+                reference_cases=body.reference_cases,
+                modeling=modeling,
             ):
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         except GeneratorExit:
@@ -365,6 +403,83 @@ async def parse_doc(file: UploadFile = File(...)):
         return {"text": text, "filename": file.filename}
     finally:
         os.unlink(tmp_path)
+
+
+# ── model CRUD ────────────────────────────────────────────────────────
+
+@app.post("/api/kb/{kb_name}/model")
+async def create_model(
+    kb_name: str,
+    files: list[UploadFile] = File(...),
+    project_id: str = Header(None, alias="X-Project-Id"),
+):
+    """上传领域文档创建/更新业务模型。
+
+    接收多篇 PDF/TXT/MD 文件，提取文本后调用 LLM 建模，持久化到 model_store。
+    """
+    pid = _require_project_id(project_id)
+
+    documents = []
+    filenames = []
+    for f in files:
+        suffix = os.path.splitext(f.filename or "")[1].lower()
+        if suffix not in (".pdf", ".txt", ".md"):
+            raise HTTPException(status_code=400, detail=f"不支持的文件类型: {suffix}")
+        tmp_path, _ = await _save_upload_file(f)
+        try:
+            docs = load_document(tmp_path)
+            text = "\n\n".join(d.page_content for d in docs)
+            documents.append(text)
+            filenames.append(f.filename or "unknown")
+        finally:
+            os.unlink(tmp_path)
+
+    if not documents:
+        raise HTTPException(status_code=400, detail="没有可处理的文档")
+
+    try:
+        agent = ModelingAgent()
+        model = agent.build_model(documents)
+    except Exception as e:
+        logging.getLogger(__name__).exception("建模失败")
+        raise HTTPException(status_code=500, detail=f"建模失败: {str(e)}")
+
+    # 以文档拼接文本为 requirement 保存
+    combined_text = "\n\n---\n\n".join(documents)
+    ts = save_model(pid, kb_name, model, combined_text)
+    return {
+        "message": "建模成功",
+        "kb": kb_name,
+        "timestamp": ts,
+        "files": filenames,
+        "model": model,
+    }
+
+
+@app.delete("/api/kb/{kb_name}/model")
+def delete_model_endpoint(kb_name: str, project_id: str = Header(None, alias="X-Project-Id")):
+    """删除 KB 的业务模型。"""
+    pid = _require_project_id(project_id)
+    delete_model(pid, kb_name)
+    return {"message": "已删除", "kb": kb_name}
+
+
+@app.get("/api/kb/{kb_name}/model")
+def get_latest_model(kb_name: str, project_id: str = Header(None, alias="X-Project-Id")):
+    """获取 KB 最新的业务模型。"""
+    pid = _require_project_id(project_id)
+    model = load_latest(pid, kb_name)
+    if model is None:
+        raise HTTPException(status_code=404, detail="该知识库没有已保存的业务模型")
+    return model
+
+
+@app.get("/api/kb/{kb_name}/model/versions")
+def get_model_versions(kb_name: str, project_id: str = Header(None, alias="X-Project-Id")):
+    """获取 KB 业务模型的所有历史版本时间戳。"""
+    pid = _require_project_id(project_id)
+    versions = list_versions(pid, kb_name)
+    return {"kb": kb_name, "versions": versions}
 
 
 # ── static files ─────────────────────────────────────────────────────

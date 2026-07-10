@@ -3,6 +3,7 @@ from typing import Generator
 
 from AiLearning.agents.base import AgentResponse
 from AiLearning.agents.learning_agent import LearningAgent
+from AiLearning.agents.modeling_agent import ModelingAgent
 from AiLearning.agents.rag_agent import RAGAgent
 from AiLearning.agents.testcase_agent import TestCaseAgent
 from AiLearning.agents.testcase_design_agent import TestCaseDesignAgent
@@ -20,7 +21,7 @@ def _init_registry():
     """懒加载注册内置 agent，幂等。"""
     if _agents:
         return
-    for agent_cls in (RAGAgent, TestCaseAgent, LearningAgent, TestCaseDesignAgent):
+    for agent_cls in (RAGAgent, TestCaseAgent, LearningAgent, TestCaseDesignAgent, ModelingAgent):
         instance = agent_cls()
         _agents[instance.name] = instance
 

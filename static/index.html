@@ -158,6 +158,23 @@
       <div id="doc-list-container" class="doc-list"><div class="empty">请先选择知识库</div></div>
     </div>
 
+    <div class="card">
+      <div class="card-title">业务建模</div>
+      <div class="hint" style="margin-bottom:12px;">上传多篇领域文档（PDF/TXT/MD），LLM 将提取业务模型（实体、流程、状态、规则）。建议一次上传多个相关文档以获得更全面的模型。</div>
+      <div class="row">
+        <label class="btn btn-outline" style="cursor:pointer;">
+          选择文件（可多选）
+          <input type="file" id="model-files" accept=".pdf,.txt,.md" multiple style="display:none" onchange="onModelFilesSelected()">
+        </label>
+        <span id="model-filenames" style="font-size:13px;color:var(--muted);">未选择文件</span>
+        <button class="btn btn-primary" onclick="startModeling()" id="btn-model" disabled>开始建模</button>
+      </div>
+      <div class="row" style="margin-top:8px;">
+        <div id="model-info" style="font-size:13px;color:var(--muted);"></div>
+        <button class="btn btn-danger btn-sm" onclick="deleteModel()" id="btn-delete-model" style="display:none;">删除模型</button>
+      </div>
+    </div>
+
   </div>
 
   <!-- ============ Tab 2: Case Generation ============ -->
@@ -180,9 +197,9 @@
       </div>
       <div class="row">
         <div class="field grow">
-          <label>知识库（可选，勾选后检索业务领域知识作为背景）</label>
+          <label>知识库（可选，选择一个 KB 检索业务领域知识作为背景）</label>
           <div id="kb-checklist" class="kb-checklist"><div class="empty">请先输入项目 ID</div></div>
-          <div class="hint">不勾选任何知识库时，Agent 仅基于需求文档生成用例。</div>
+          <div class="hint">不选择知识库时，Agent 仅基于需求文档生成用例。</div>
         </div>
       </div>
       <div class="row">
@@ -201,6 +218,20 @@
       </div>
       <div class="row">
         <div class="field grow">
+          <label>技术文档（粘贴或上传 PDF/TXT/MD，接口文档、技术约束等）</label>
+          <div class="row" style="margin-bottom:8px;">
+            <label class="btn btn-outline btn-sm" style="cursor:pointer;">
+              选择文件
+              <input type="file" id="tech-file" accept=".pdf,.txt,.md" style="display:none" onchange="onFileSelected('tech')">
+            </label>
+            <span id="tech-filename" style="font-size:13px;color:var(--muted);">未选择文件</span>
+            <button class="btn btn-primary btn-sm" onclick="uploadFile('tech')" id="btn-tech-upload" disabled>上传并填充</button>
+          </div>
+          <textarea id="gen-tech-doc" placeholder="粘贴技术文档内容（接口文档、技术约束等），或使用上方按钮上传文件"></textarea>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field grow">
           <label>参考用例（粘贴或上传 PDF/TXT/MD，可多次追加）</label>
           <div class="row" style="margin-bottom:8px;">
             <label class="btn btn-outline btn-sm" style="cursor:pointer;">
@@ -212,6 +243,13 @@
           </div>
           <textarea id="gen-reference" placeholder="粘贴参考用例文本（格式范例），或使用上方按钮上传文件&#10;可多次上传，内容将追加"></textarea>
         </div>
+      </div>
+      <div class="row" style="align-items:center;">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:14px;">
+          <input type="checkbox" id="gen-use-modeling" style="width:16px;height:16px;">
+          启用影响分析（Phase -0.5）— 需先在 Tab 1 建模
+        </label>
+        <span id="model-status" style="font-size:12px;color:var(--muted);margin-left:8px;"></span>
       </div>
       <div class="row">
         <button class="btn btn-primary" onclick="startGeneration()" id="btn-generate">生成用例</button>
@@ -276,10 +314,12 @@ function switchTab(name) {
   if (name === 'kb') {
     $('.tab-btn:nth-child(1)').classList.add('active');
     $('#panel-kb').classList.add('active');
+    refreshModelInfo();
   } else {
     $('.tab-btn:nth-child(2)').classList.add('active');
     $('#panel-gen').classList.add('active');
     refreshGenKBList();
+    fetchModelStatus();
   }
 }
 
@@ -288,6 +328,7 @@ function switchTab(name) {
 function onKBSelect() {
   refreshDocList();
   onKBFileSelected();
+  refreshModelInfo();
 }
 
 async function refreshKBList() {
@@ -437,9 +478,9 @@ async function refreshGenKBList() {
     if (kbs.length === 0) {
       container.innerHTML = '<div class="empty">该项目下暂无知识库，请先在 Tab 1 创建</div>';
     } else {
-      container.innerHTML = kbs.map(kb => `
+      container.innerHTML = kbs.map((kb, i) => `
         <div class="kb-checklist-item">
-          <input type="checkbox" value="${escAttr(kb)}" id="kb-${escAttr(kb)}">
+          <input type="radio" name="kb-select" value="${escAttr(kb)}" id="kb-${escAttr(kb)}" onchange="fetchModelStatus()">
           <label for="kb-${escAttr(kb)}">${escHtml(kb)}</label>
         </div>
       `).join('');
@@ -447,9 +488,9 @@ async function refreshGenKBList() {
   } catch (e) { /* ignore */ }
 }
 
-function getSelectedKBs() {
-  const checks = $$('#kb-checklist input[type=checkbox]:checked');
-  return Array.from(checks).map(c => c.value);
+function getSelectedKB() {
+  const radio = document.querySelector('#kb-checklist input[name="kb-select"]:checked');
+  return radio ? radio.value : '';
 }
 
 function formatTime(seconds) {
@@ -457,7 +498,7 @@ function formatTime(seconds) {
   return Math.floor(seconds / 60) + 'm ' + Math.round(seconds % 60) + 's';
 }
 
-const phaseNames = { phase0: 'Skill 选择', phase1: '测试点生成', phase2: '用例展开' };
+const phaseNames = { 'phase-0.5': '影响分析', phase0: 'Skill 选择', phase1: '测试点生成', phase2: '用例展开' };
 let phaseStartTimes = {};
 let progressContainer = null;
 
@@ -483,10 +524,11 @@ function updateProgress(icon, text) {
 async function startGeneration() {
   const question = $('#gen-question').value.trim();
   const requirement = $('#gen-requirement').value.trim();
+  const techDoc = $('#gen-tech-doc').value.trim();
   const referenceCases = $('#gen-reference').value.trim();
   const pid = $('#gen-project-id').value.trim();
   const workers = parseInt($('#gen-workers').value) || 3;
-  const kbNames = getSelectedKBs();
+  const kbName = getSelectedKB();
 
   if (!question) { toast('请输入问题描述', 'error'); return; }
 
@@ -512,8 +554,10 @@ async function startGeneration() {
       body: JSON.stringify({
         question,
         requirement_doc: requirement || undefined,
+        tech_doc: techDoc || undefined,
         reference_cases: referenceCases || undefined,
-        kb_names: kbNames,
+        use_business_modeling: $('#gen-use-modeling').checked,
+        kb_names: kbName ? [kbName] : undefined,
       }),
       signal: genAbortController.signal,
     });
@@ -564,7 +608,7 @@ function handleSSEEvent(event) {
 
   if (type === 'phase_start') {
     phaseStartTimes[phase] = Date.now();
-    addProgress('⏳', phaseNames[phase] || phase, '');
+    addProgress('⏳', (phaseNames[phase] || phase), '');
   } else if (type === 'phase_end') {
     const elapsed = phaseStartTimes[phase]
       ? formatTime((Date.now() - phaseStartTimes[phase]) / 1000) : '';
@@ -574,6 +618,14 @@ function handleSSEEvent(event) {
         ? ' — 共 ' + data.total_test_points + ' 个测试点'
         : '';
     addProgress('✅', (phaseNames[phase] || phase) + extra, elapsed);
+  } else if (type === 'impact_done') {
+    const elapsed = phaseStartTimes['phase-0.5']
+      ? formatTime((Date.now() - phaseStartTimes['phase-0.5']) / 1000) : '';
+    const analysis = data && data.analysis;
+    const diffs = analysis ? (analysis.requirement_diffs || []).length : 0;
+    addProgress('✅', '影响分析完成 — ' + diffs + ' 条变更', elapsed);
+  } else if (type === 'impact_error') {
+    addProgress('⚠', '影响分析失败: ' + ((data && data.message) || '未知'), '');
   } else if (type === 'batch_done') {
     const elapsed = phaseStartTimes['phase1']
       ? formatTime((Date.now() - phaseStartTimes['phase1']) / 1000) : '';
@@ -665,6 +717,7 @@ function copyJSON() {
 const UPLOAD_AREAS = {
   req: { file: 'req-file', filename: 'req-filename', btn: 'btn-req-upload', ta: 'gen-requirement' },
   ref: { file: 'ref-file', filename: 'ref-filename', btn: 'btn-ref-upload', ta: 'gen-reference' },
+  tech: { file: 'tech-file', filename: 'tech-filename', btn: 'btn-tech-upload', ta: 'gen-tech-doc' },
 };
 
 function onFileSelected(area) {
@@ -714,6 +767,130 @@ async function uploadFile(area) {
   } finally {
     btn.disabled = false;
     btn.textContent = '上传并填充';
+  }
+}
+
+// ── Tab 1: Business Modeling ─────────────────────────────────
+
+function onModelFilesSelected() {
+  const files = $('#model-files').files;
+  if (files.length === 0) {
+    $('#model-filenames').textContent = '未选择文件';
+    $('#btn-model').disabled = true;
+    return;
+  }
+  const names = Array.from(files).map(f => f.name).join(', ');
+  $('#model-filenames').textContent = names + ' (' + files.length + ' 个文件)';
+  $('#btn-model').disabled = !$('#kb-select').value;
+}
+
+async function startModeling() {
+  const kbName = $('#kb-select').value;
+  const files = $('#model-files').files;
+  if (!kbName || files.length === 0) { toast('请选择知识库和文件', 'error'); return; }
+
+  const btn = $('#btn-model');
+  btn.disabled = true;
+  btn.textContent = '建模中...';
+
+  try {
+    const formData = new FormData();
+    for (const f of files) {
+      formData.append('files', f);
+    }
+    const pid = currentProjectId();
+    const resp = await fetch('/api/kb/' + encodeURIComponent(kbName) + '/model', {
+      method: 'POST',
+      headers: { 'X-Project-Id': pid },
+      body: formData,
+    });
+    if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
+    const data = await resp.json();
+    toast('建模成功 — ' + (data.model.entities || []).length + ' 实体, ' + (data.model.flows || []).length + ' 流程');
+    $('#model-files').value = '';
+    onModelFilesSelected();
+    refreshModelInfo();
+  } catch (e) {
+    toast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '开始建模';
+  }
+}
+
+async function deleteModel() {
+  const kbName = $('#kb-select').value;
+  if (!kbName) return;
+  if (!confirm('确认删除知识库 "' + kbName + '" 的业务模型？')) return;
+  try {
+    const resp = await fetch('/api/kb/' + encodeURIComponent(kbName) + '/model', {
+      method: 'DELETE', headers: getHeaders(),
+    });
+    if (!resp.ok) throw new Error((await resp.json()).detail || resp.statusText);
+    toast('模型已删除');
+    refreshModelInfo();
+  } catch (e) { toast(e.message, 'error'); }
+}
+
+async function refreshModelInfo() {
+  const kbName = $('#kb-select').value;
+  const info = $('#model-info');
+  const delBtn = $('#btn-delete-model');
+  if (!kbName) {
+    info.textContent = '';
+    delBtn.style.display = 'none';
+    return;
+  }
+  try {
+    const resp = await fetch('/api/kb/' + encodeURIComponent(kbName) + '/model', { headers: getHeaders() });
+    if (!resp.ok) {
+      info.textContent = '尚未建模';
+      delBtn.style.display = 'none';
+      return;
+    }
+    const data = await resp.json();
+    const ts = data.timestamp ? data.timestamp.replace(/(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})/, '$1-$2-$3 $4:$5:$6') : '未知';
+    const ents = data.model && data.model.entities ? data.model.entities.length : 0;
+    const flows = data.model && data.model.flows ? data.model.flows.length : 0;
+    info.textContent = '已建模 — ' + ts + '，' + ents + ' 实体, ' + flows + ' 流程';
+    delBtn.style.display = 'inline-block';
+  } catch (e) {
+    info.textContent = '尚未建模';
+    delBtn.style.display = 'none';
+  }
+}
+
+// ── Tab 2: Model Status ───────────────────────────────────────
+
+async function fetchModelStatus() {
+  const kbName = getSelectedKB();
+  const statusEl = $('#model-status');
+  const checkbox = $('#gen-use-modeling');
+
+  if (!kbName) {
+    statusEl.textContent = '请先选择知识库';
+    checkbox.disabled = true;
+    return;
+  }
+  try {
+    const pid = $('#gen-project-id').value.trim();
+    const resp = await fetch('/api/kb/' + encodeURIComponent(kbName) + '/model', {
+      headers: { 'Content-Type': 'application/json', 'X-Project-Id': pid },
+    });
+    if (resp.ok) {
+      statusEl.textContent = '业务模型已就绪';
+      statusEl.style.color = 'var(--success)';
+      checkbox.disabled = false;
+    } else {
+      statusEl.textContent = '该 KB 尚未建模，请先在 Tab 1 创建';
+      statusEl.style.color = 'var(--muted)';
+      checkbox.disabled = true;
+      checkbox.checked = false;
+    }
+  } catch (e) {
+    statusEl.textContent = '无法检查模型状态';
+    statusEl.style.color = 'var(--muted)';
+    checkbox.disabled = true;
   }
 }
 

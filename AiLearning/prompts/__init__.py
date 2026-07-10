@@ -8,8 +8,10 @@ from AiLearning.prompts.generic_import import (
 )
 from AiLearning.prompts.testcase_design import (
     DEFAULT_EXPANSION_PROMPT,
+    DEFAULT_IMPACT_ANALYSIS_PROMPT,
     DEFAULT_SKILL_SELECTION_PROMPT,
     DEFAULT_TESTPOINT_PROMPT,
+    ImpactAnalysisPrompt,
     SkillSelectionPrompt,
     TestCaseExpansionPrompt,
     TestPointGenerationPrompt,
@@ -29,6 +31,8 @@ __all__ = [
     "DEFAULT_TESTPOINT_PROMPT",
     "TestCaseExpansionPrompt",
     "DEFAULT_EXPANSION_PROMPT",
+    "ImpactAnalysisPrompt",
+    "DEFAULT_IMPACT_ANALYSIS_PROMPT",
     "GenericImportPrompt",
     "DEFAULT_GENERIC_IMPORT_PROMPT",
 ]
