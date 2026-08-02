@@ -58,14 +58,21 @@ class TestCaseDesignAgent(BaseAgent):
         top_k = kwargs.get("top_k", 10)
         max_workers = kwargs.get("max_workers", 3)
         modeling: ModelingContext = kwargs.get("modeling", ModelingContext())
+        skill_pre_selected: str | None = kwargs.get("skill_pre_selected")
 
         # ── 1. 处理需求文档（合并需求文档与技术文档）──
         combined_requirement = f"{requirement_doc}\n\n---\n\n{tech_doc}" if tech_doc else requirement_doc
         requirement_context = self._process_requirement_doc(combined_requirement)
 
+        logger.info(
+            "用例生成开始 q=%.60s kb=%s modeling=%s",
+            question, len(collection_names or []), modeling.enabled,
+        )
+
         client = get_client()
         impact_analysis = None
         regression_modules = ""
+        regression_focus: list[str] = []
         model_rules = None
 
         if modeling.enabled and modeling.previous_model:
@@ -79,6 +86,15 @@ class TestCaseDesignAgent(BaseAgent):
                     current_requirement=requirement_context,
                 )
                 regression_modules = " ".join(impact_analysis.get("regression_scope", []))
+                regression_focus = [
+                    s for s in impact_analysis.get("regression_focus", [])
+                    if s in SKILL_REGISTRY
+                ]
+                diffs = len(impact_analysis.get("requirement_diffs", []))
+                logger.info(
+                    "Phase -0.5 影响分析完成 diffs=%d scope=%s focus=%s",
+                    diffs, regression_modules or "(无)", regression_focus,
+                )
             except Exception:
                 logger.exception("Phase -0.5: 影响分析失败，继续执行主流程")
 
@@ -91,18 +107,20 @@ class TestCaseDesignAgent(BaseAgent):
                 for r in rules
             ) if rules else None
 
-        # ── 2. RAG 检索（用 regression_scope 增强 query）──
+        # ── 2. RAG 检索（regression_modules + 需求前缀合并增强 query）──
         business_docs = []
+        req_prefix = combined_requirement[:500] if combined_requirement and combined_requirement != "无需求文档" else ""
         if regression_modules:
-            business_query = f"{question} {regression_modules}".strip()
+            business_query = f"{question} {regression_modules} {req_prefix}".strip()
         else:
-            business_query = f"{question}\n{combined_requirement[:500]}".strip()
+            business_query = f"{question}\n{req_prefix}".strip()
 
         if collection_names:
             business_docs = retrieve_from_multiple_collections(business_query, collection_names, top_k=top_k)
         elif collection_name:
             business_docs = retrieve(business_query, collection_name, top_k=top_k)
         business_context = self._build_context(business_docs)
+        logger.info("RAG 检索 docs=%d query=%.100s", len(business_docs), business_query)
 
         main_context = (
             f"## 业务领域知识（你已掌握的背景）\n{business_context}\n\n"
@@ -116,14 +134,32 @@ class TestCaseDesignAgent(BaseAgent):
         # ═══════════════════════════════════════════════════════
         # Phase 0: Skill 选择
         # ═══════════════════════════════════════════════════════
-        try:
-            selected_names = self._select_skills(
-                client, main_context, requirement_context, question,
-                model_rules=model_rules,
-            )
-        except Exception:
-            logger.exception("Phase 0: Skill 选择失败")
-            raise
+        if skill_pre_selected:
+            selected_names = [skill_pre_selected]
+            logger.info("Phase 0 跳过（使用预选 Skill）: %s", skill_pre_selected)
+        else:
+            try:
+                selected_names = self._select_skills(
+                    client, main_context, requirement_context, question,
+                    model_rules=model_rules,
+                )
+            except Exception:
+                logger.exception("Phase 0: Skill 选择失败")
+                raise
+
+        logger.info("Phase 0 Skill 选择完成 selected=%s", selected_names)
+
+        # 合并 Phase -0.5 的 regression_focus（被改动规则的关联维度）
+        if regression_focus:
+            before = len(selected_names)
+            selected_set = set(selected_names)
+            for s in regression_focus:
+                if s not in selected_set:
+                    selected_names.append(s)
+                    selected_set.add(s)
+            if len(selected_names) > before:
+                logger.info("Phase -0.5 regression_focus 补充 Skill: %s → %s",
+                            regression_focus, selected_names)
 
         # ═══════════════════════════════════════════════════════
         # Phase 1: 测试点生成（并行，按批次）
@@ -145,6 +181,8 @@ class TestCaseDesignAgent(BaseAgent):
                         all_test_points.extend(points)
                     except Exception:
                         logger.exception("批次 %s 生成测试点失败", batch["group_name"])
+
+        logger.info("Phase 1 测试点生成完成 total=%d batches=%d", len(all_test_points), len(batches))
 
         # ═══════════════════════════════════════════════════════
         # Phase 2: 用例展开（并行，每批 ≤5 个测试点避免输出截断）
@@ -176,6 +214,8 @@ class TestCaseDesignAgent(BaseAgent):
             for idx in sorted(results_by_idx):
                 all_cases.extend(results_by_idx[idx])
 
+            logger.info("Phase 2 用例展开完成 total=%d", len(all_cases))
+
             # 规范化：确保 expected/precondition 为字符串（LLM 可能输出数组）
             for case in all_cases:
                 for field in ("expected", "precondition"):
@@ -188,6 +228,10 @@ class TestCaseDesignAgent(BaseAgent):
         else:
             answer = "[]"
 
+        logger.info(
+            "用例生成完成 skills=%s points=%d cases=%d",
+            selected_names, len(all_test_points), len(all_cases),
+        )
         return AgentResponse(
             answer=answer,
             agent_name=self.name,
@@ -222,6 +266,7 @@ class TestCaseDesignAgent(BaseAgent):
         top_k = kwargs.get("top_k", 10)
         max_workers = kwargs.get("max_workers", 3)
         modeling: ModelingContext = kwargs.get("modeling", ModelingContext())
+        skill_pre_selected: str | None = kwargs.get("skill_pre_selected")
         t0 = time_module.perf_counter()
 
         try:
@@ -232,6 +277,7 @@ class TestCaseDesignAgent(BaseAgent):
             client = get_client()
             impact_analysis = None
             regression_modules = ""
+            regression_focus: list[str] = []
             model_rules = None
 
             # ═════════════════════════════════════════════════════
@@ -243,6 +289,7 @@ class TestCaseDesignAgent(BaseAgent):
                     return
 
                 yield {"event": "phase_start", "phase": "phase-0.5", "data": {}}
+                t_phase = time_module.perf_counter()
                 try:
                     impact_analysis = self._run_impact_analysis(
                         client,
@@ -250,15 +297,30 @@ class TestCaseDesignAgent(BaseAgent):
                         current_requirement=requirement_context,
                     )
                     regression_modules = " ".join(impact_analysis.get("regression_scope", []))
+                    regression_focus = [
+                        s for s in impact_analysis.get("regression_focus", [])
+                        if s in SKILL_REGISTRY
+                    ]
+                    diffs = len(impact_analysis.get("requirement_diffs", []))
+                    logger.info(
+                        "Phase -0.5 影响分析完成 diffs=%d scope=%s focus=%s",
+                        diffs, regression_modules or "(无)", regression_focus,
+                    )
                     yield {
                         "event": "impact_done",
-                        "data": {"analysis": model_to_dict(impact_analysis)},
+                        "data": {
+                            "analysis": model_to_dict(impact_analysis),
+                            "elapsed_ms": round((time_module.perf_counter() - t_phase) * 1000),
+                        },
                     }
                 except Exception:
                     logger.exception("Phase -0.5: 影响分析失败，继续执行主流程")
                     yield {
                         "event": "impact_error",
-                        "data": {"message": "影响分析失败，已跳过"},
+                        "data": {
+                            "message": "影响分析失败，已跳过",
+                            "elapsed_ms": round((time_module.perf_counter() - t_phase) * 1000),
+                        },
                     }
 
                 # 提取模型规则用于 Phase 0
@@ -271,17 +333,21 @@ class TestCaseDesignAgent(BaseAgent):
                         for r in rules
                     )
 
-            # ── RAG 检索（用 regression_scope 增强 query）──
+            # ── RAG 检索（regression_modules + 需求前缀合并增强 query）──
+            req_prefix = combined_requirement[:500] if combined_requirement and combined_requirement != "无需求文档" else ""
             if regression_modules:
-                business_query = f"{question} {regression_modules}".strip()
+                business_query = f"{question} {regression_modules} {req_prefix}".strip()
             else:
-                business_query = f"{question}\n{combined_requirement[:500]}".strip()
+                business_query = f"{question}\n{req_prefix}".strip()
 
+            t_rag = time_module.perf_counter()
             business_docs = []
             if collection_names:
                 business_docs = retrieve_from_multiple_collections(business_query, collection_names, top_k=top_k)
             elif collection_name:
                 business_docs = retrieve(business_query, collection_name, top_k=top_k)
+            rag_elapsed = round((time_module.perf_counter() - t_rag) * 1000)
+            logger.info("RAG 检索 docs=%d elapsed=%dms query=%.100s", len(business_docs), rag_elapsed, business_query)
             business_context = self._build_context(business_docs)
 
             main_context = f"## 业务领域知识（你已掌握的背景）\n{business_context}\n\n"
@@ -293,20 +359,43 @@ class TestCaseDesignAgent(BaseAgent):
                 yield {"event": "cancelled", "data": {}}
                 return
 
-            yield {"event": "phase_start", "phase": "phase0", "data": {}}
-            try:
-                selected_names = self._select_skills(
-                    client, main_context, requirement_context, question,
-                    model_rules=model_rules,
-                )
+            if skill_pre_selected:
+                selected_names = [skill_pre_selected]
                 yield {
                     "event": "phase_end", "phase": "phase0",
-                    "data": {"selected_skills": selected_names},
+                    "data": {"selected_skills": selected_names, "pre_selected": True},
                 }
-            except Exception:
-                logger.exception("Phase 0: Skill 选择失败")
-                yield {"event": "error", "data": {"message": "Skill 选择失败，请检查输入或重试"}}
-                return
+            else:
+                yield {"event": "phase_start", "phase": "phase0", "data": {}}
+                t_phase = time_module.perf_counter()
+                try:
+                    selected_names = self._select_skills(
+                        client, main_context, requirement_context, question,
+                        model_rules=model_rules,
+                    )
+                    yield {
+                        "event": "phase_end", "phase": "phase0",
+                        "data": {
+                            "selected_skills": selected_names,
+                            "elapsed_ms": round((time_module.perf_counter() - t_phase) * 1000),
+                        },
+                    }
+                except Exception:
+                    logger.exception("Phase 0: Skill 选择失败")
+                    yield {"event": "error", "data": {"message": "Skill 选择失败，请检查输入或重试"}}
+                    return
+
+            # 合并 Phase -0.5 的 regression_focus
+            if regression_focus:
+                before = len(selected_names)
+                selected_set = set(selected_names)
+                for s in regression_focus:
+                    if s not in selected_set:
+                        selected_names.append(s)
+                        selected_set.add(s)
+                if len(selected_names) > before:
+                    logger.info("Phase -0.5 regression_focus 补充 Skill: %s → %s",
+                                regression_focus, selected_names)
 
             # ═════════════════════════════════════════════════════
             # Phase 1: 测试点生成（并行，按批次）
@@ -319,6 +408,7 @@ class TestCaseDesignAgent(BaseAgent):
             batches = self._build_batches(selected_names)
 
             if batches:
+                t_phase = time_module.perf_counter()
                 yield {
                     "event": "phase_start", "phase": "phase1",
                     "data": {"batches": [b["group_name"] for b in batches]},
@@ -362,7 +452,10 @@ class TestCaseDesignAgent(BaseAgent):
 
                 yield {
                     "event": "phase_end", "phase": "phase1",
-                    "data": {"total_test_points": len(all_test_points)},
+                    "data": {
+                        "total_test_points": len(all_test_points),
+                        "elapsed_ms": round((time_module.perf_counter() - t_phase) * 1000),
+                    },
                 }
 
             # ═════════════════════════════════════════════════════
@@ -383,6 +476,7 @@ class TestCaseDesignAgent(BaseAgent):
                 for i in range(0, len(all_test_points), chunk_size)
             ]
 
+            t_phase = time_module.perf_counter()
             yield {
                 "event": "phase_start", "phase": "phase2",
                 "data": {"total_chunks": len(chunks)},
@@ -433,6 +527,14 @@ class TestCaseDesignAgent(BaseAgent):
             # 按索引排序合并
             for idx in sorted(results_by_idx):
                 all_cases.extend(results_by_idx[idx])
+
+            yield {
+                "event": "phase_end", "phase": "phase2",
+                "data": {
+                    "total_cases": len(all_cases),
+                    "elapsed_ms": round((time_module.perf_counter() - t_phase) * 1000),
+                },
+            }
 
             # 规范化 expected/precondition
             for case in all_cases:
@@ -596,10 +698,26 @@ class TestCaseDesignAgent(BaseAgent):
             temperature=0,
         )
         selected = self._parse_json_list(response)
-        if not selected:
-            logger.warning("Skill 选择返回空，使用全部 Skill 作为 fallback")
+        return self._validate_selection(selected)
+
+    @staticmethod
+    def _validate_selection(raw_names: list) -> list[str]:
+        """校验 Skill 选择结果：过滤非法名称，过少时 fallback 全选。"""
+        # 白名单过滤非法名称
+        known = set(SKILL_REGISTRY.keys())
+        valid = [n for n in raw_names if n in known]
+        invalid = [n for n in raw_names if n not in known]
+        if invalid:
+            logger.warning("Phase 0 返回 %d 个非法 skill 名，已过滤: %s", len(invalid), invalid)
+
+        if not valid:
+            logger.warning("Skill 选择结果为空（或全部非法），使用全部 Skill 作为 fallback")
             return list(SKILL_REGISTRY.keys())
-        return selected
+        if len(raw_names) < 2 and not invalid:
+            # 全合法但数量过少：LLM 确实只选了 0-1 个，可能是漏选
+            logger.warning("Skill 选择仅 %d 个 (%s)，过少，降级为全选", len(valid), valid)
+            return list(SKILL_REGISTRY.keys())
+        return valid
 
     # ── Phase 1: 测试点生成 ──────────────────────────────────────
 

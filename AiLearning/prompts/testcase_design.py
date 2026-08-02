@@ -165,7 +165,14 @@ class ImpactAnalysisPrompt:
         "1. 逐条提取新需求文档中的变更（阈值调整、新增字段、新增约束、流程变化等）\n"
         "2. 对每条变更，判断影响哪个已有实体/流程/规则\n"
         "3. 根据变更点推导需要回归的测试模块\n"
-        "4. 如果新需求与已有模型完全无差异，no_impact=true"
+        "4. 如果新需求与已有模型完全无差异，no_impact=true\n"
+        "5. 找到被变更影响到的已有模型中的规则，收集这些规则的 related_skill，"
+        "去重后填入 regression_focus。"
+        "例如：如果变更影响了 related_skill=boundary_value 和 related_skill=state_machine "
+        "的两条规则，则 regression_focus=[\"boundary_value\", \"state_machine\"]。"
+        "related_skill 的合法值只有 6 个："
+        "boundary_value, exception_path, permission_security, state_machine, "
+        "data_consistency, combinatorial。不要输出这 6 个以外的值。"
         "\n\n"
         "输出要求：\n"
         "- 只输出 JSON，不要有任何解释或 markdown 包裹"
@@ -178,7 +185,16 @@ class ImpactAnalysisPrompt:
         "```\n\n"
         "## 新需求文档（本次传入，可能只描述变更部分）\n"
         "{current_requirement}\n\n"
-        "请输出变更影响分析 JSON（不要 markdown 包裹）："
+        "请输出变更影响分析 JSON（不要 markdown 包裹），格式如下：\n"
+        "```\n"
+        "{\n"
+        '  "requirement_diffs": [{"type": "threshold", "description": "...", '
+        '"old_value": "...", "new_value": "...", "affected_scope": ["规则名/实体名"]}],\n'
+        '  "regression_scope": ["受影响的模块名称"],\n'
+        '  "regression_focus": ["boundary_value", "state_machine"],\n'
+        '  "no_impact": false\n'
+        "}\n"
+        "```"
     )
 
     def format(self, previous_model: str, current_requirement: str) -> str:

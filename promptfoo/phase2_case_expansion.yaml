@@ -110,7 +110,7 @@ defaultTest:
         }
 
     # ── 规则7: Python Judge 评估 steps 可执行性 ────────────────────
-    # 用自定义 Python 脚本调 DeepSeek API 评分，兼容其 markdown fence 返回格式
-    # 脚本内置三级 JSON fallback 解析，断言均分 ≥ 3.5（归一化 score ≥ 0.7）
+    # 二元检查表（5 项条件，全部满足 → pass），最终 score = pass_rate
+    # 通过阈值 ≥ 0.7，即至少 70% 的用例全部 5 项条件通过
     - type: python
       value: file://grader_steps_executability.py

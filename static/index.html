@@ -558,6 +558,7 @@ async function startGeneration() {
         reference_cases: referenceCases || undefined,
         use_business_modeling: $('#gen-use-modeling').checked,
         kb_names: kbName ? [kbName] : undefined,
+        max_workers: workers,
       }),
       signal: genAbortController.signal,
     });

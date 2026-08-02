@@ -1,4 +1,9 @@
+import logging
+import time
+
 from AiLearning.rag import embedder, vector_store, bm25_store
+
+logger = logging.getLogger(__name__)
 
 
 def _rrf_fusion(
@@ -32,6 +37,7 @@ def retrieve_from_multiple_collections(
     top_k: int = 5,
 ) -> list[str]:
     """跨多个知识库混合检索，RRF 融合后返回 top_k 个文档。"""
+    t0 = time.perf_counter()
     recall_k = top_k * 2
     query_vecs = embedder.embed_queries([query])
     query_vec = query_vecs[0]
@@ -47,12 +53,15 @@ def retrieve_from_multiple_collections(
         for rank, doc in enumerate(bm25_results):
             score[doc] = score.get(doc, 0.0) + 1.0 / (60 + rank + 1)
 
-    return sorted(score.keys(), key=lambda d: score[d], reverse=True)[:top_k]
+    result = sorted(score.keys(), key=lambda d: score[d], reverse=True)[:top_k]
+    elapsed = round((time.perf_counter() - t0) * 1000)
+    logger.info("多库检索完成 collections=%d docs=%d elapsed=%dms", len(collection_names), len(result), elapsed)
+    return result
 
 
 def retrieve(query: str, collection_name: str, top_k: int = 5) -> list[str]:
     """混合检索：向量 + BM25，RRF 融合后返回 top_k 个文档。"""
-    # 每路召回 top_k * 2 个结果，给融合留冗余
+    t0 = time.perf_counter()
     recall_k = top_k * 2
 
     # 向量检索（使用 BGE 查询前缀）
@@ -65,4 +74,7 @@ def retrieve(query: str, collection_name: str, top_k: int = 5) -> list[str]:
     # RRF 融合
     fused = _rrf_fusion(vector_results, bm25_results)
 
-    return fused[:top_k]
+    result = fused[:top_k]
+    elapsed = round((time.perf_counter() - t0) * 1000)
+    logger.info("混合检索完成 collection=%s docs=%d elapsed=%dms query=%.80s", collection_name, len(result), elapsed, query)
+    return result

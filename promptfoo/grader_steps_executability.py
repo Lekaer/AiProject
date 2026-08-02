@@ -1,7 +1,10 @@
-"""PromptFoo Python 断言：评估测试用例 steps 可执行性。
+"""PromptFoo Python 断言：评估测试用例 steps 可执行性（二元检查表）。
 
 由 phase2_case_expansion.yaml 中的 python 断言引用。
 需要 OPENAI_API_KEY + OPENAI_BASE_URL 环境变量指向 DeepSeek。
+
+改进：从 1-5 数值量表改为 5 项二元条件检查，每项 pass/fail。
+  最终 score = 通过的用例数 / 总用例数，阈值 ≥ 0.7 即 70% 以上用例全部条件通过。
 """
 
 import json
@@ -11,8 +14,24 @@ import re
 from openai import OpenAI
 
 
+_CHECKLIST_RUBRIC = (
+    "For each test case's 'steps' field, evaluate these 5 conditions (true/false):\n"
+    "1. concrete_action: Every step contains a specific verb/action (e.g. 点击/输入/调用/查询/发送/修改/删除)\n"
+    "2. clear_target: Every step specifies what to operate on (e.g. page element, API endpoint, input field)\n"
+    "3. logical_order: Steps are sequenced so each step's output feeds the next (no orphaned actions)\n"
+    "4. no_vagueness: No step requires the tester to guess (e.g. avoid 进行相应操作/执行验证/做检查)\n"
+    "5. right_granularity: Steps are at the right level — not too coarse (登录系统 as one step) nor too fine (按键级别)\n"
+    "\n"
+    "A test case passes ONLY if ALL 5 conditions are true.\n"
+    "\n"
+    "Reply ONLY with a JSON object. No markdown, no extra text:\n"
+    '{"checks": [{"id": "TC-001", "pass": true/false, "failed": ["condition_name", ...]}], '
+    '"total_pass": N, "total": M}'
+)
+
+
 def _parse_json(text: str) -> dict | None:
-    """三级 fallback 解析，兼容 DeepSeek 返回的 markdown fence 等格式。"""
+    """三级 fallback 解析，兼容 markdown fence / 裸 JSON / 正则兜底。"""
     text = text.strip()
     try:
         return json.loads(text)
@@ -41,28 +60,16 @@ def get_assert(output: str, context: dict) -> dict:
     if not api_key:
         return {"pass": False, "score": 0, "reason": "OPENAI_API_KEY not set"}
 
-    # 只提取 steps 字段用于评分，减少输入长度
+    # 只提取 [id + steps] 用于评分，减少输入长度
     try:
         cases = json.loads(output)
         steps_only = [
-            {"id": c.get("id", f"TC-{i}"), "steps": c.get("steps", [])}
+            {"id": c.get("id", f"TC-{i + 1}"), "steps": c.get("steps", [])}
             for i, c in enumerate(cases)
         ]
         grading_input = json.dumps(steps_only, ensure_ascii=False, indent=2)
     except (json.JSONDecodeError, TypeError):
         grading_input = output
-
-    rubric = (
-        "Steps should be specific and directly executable by a tester.\n"
-        "Rate on a scale of 1 to 5:\n"
-        "- 1: Vague, abstract, no concrete actions\n"
-        "- 2: Somewhat vague, missing key details\n"
-        "- 3: Acceptable, can be followed with some interpretation\n"
-        "- 4: Clear and specific, mostly actionable\n"
-        "- 5: Highly specific, every step is directly executable without interpretation\n\n"
-        "For each test case in the JSON array, evaluate its 'steps' field.\n"
-        'Reply ONLY with: {"score": <number>, "reason": "<brief>"}'
-    )
 
     client = OpenAI(api_key=api_key, base_url=base_url, timeout=120, max_retries=2)
 
@@ -72,7 +79,7 @@ def get_assert(output: str, context: dict) -> dict:
                 model="deepseek-v4-pro",
                 messages=[
                     {"role": "system", "content": "Reply with ONLY a JSON object. No markdown, no extra text."},
-                    {"role": "user", "content": f"<Output>\n{grading_input}\n</Output>\n<Rubric>\n{rubric}\n</Rubric>"},
+                    {"role": "user", "content": f"<Output>\n{grading_input}\n</Output>\n<Rubric>\n{_CHECKLIST_RUBRIC}\n</Rubric>"},
                 ],
                 temperature=0,
                 max_tokens=4096,
@@ -89,24 +96,39 @@ def get_assert(output: str, context: dict) -> dict:
             return {"pass": False, "score": 0, "reason": "API returned empty response after 3 attempts"}
 
         parsed = _parse_json(content)
-        if parsed:
-            score = float(parsed.get("score", 0))
-            reason = parsed.get("reason", "")
+        if parsed and "checks" in parsed:
+            checks = parsed["checks"]
+            total = len(checks)
+            passed = sum(1 for c in checks if c.get("pass"))
+            pass_rate = passed / total if total > 0 else 0
+
+            # 收集失败详情
+            failures = [
+                f"{c['id']}: {c.get('failed', [])}"
+                for c in checks if not c.get("pass")
+            ]
+            reason = f"Steps executability: {passed}/{total} pass ({pass_rate:.0%})"
+            if failures:
+                reason += f". Failed: {'; '.join(failures[:3])}"
+                if len(failures) > 3:
+                    reason += f" ... +{len(failures) - 3} more"
+
             return {
-                "pass": score >= 3.5,
-                "score": score / 5.0,
-                "reason": f"Steps executability: {score}/5. {reason}",
+                "pass": pass_rate >= 0.7,
+                "score": pass_rate,
+                "reason": reason,
             }
 
-        # 尝试直接从文本中提取数字
-        num_match = re.search(r"(\d+\.?\d*)", content)
+        # fallback: 尝试从文本中提取 pass count
+        num_match = re.search(r"(\d+)\s*/\s*(\d+)", content)
         if num_match:
-            score = float(num_match.group(1))
-            if 1 <= score <= 5:
-                return {
-                    "pass": score >= 3.5,
-                    "score": score / 5.0,
-                    "reason": f"Steps executability: {score}/5 (extracted from: {content[:100]})",
-                }
+            passed = int(num_match.group(1))
+            total = int(num_match.group(2))
+            pass_rate = passed / total if total > 0 else 0
+            return {
+                "pass": pass_rate >= 0.7,
+                "score": pass_rate,
+                "reason": f"Steps executability: {passed}/{total} pass (extracted from text)",
+            }
 
     return {"pass": False, "score": 0, "reason": f"Could not parse grader response: {content[:200]}"}

@@ -103,6 +103,8 @@ class AskRequest(BaseModel):
     reference_cases: str | None = None    # 参考用例文本（风格范例，仅 Phase 2 使用）
     kb_names: list[str] | None = None     # 指定 KB 名称列表，空列表=不检索，None=全部 KB
     use_business_modeling: bool = False   # 是否启用 Phase -0.5 影响分析
+    skill_pre_selected: str | None = None  # 预选测试维度（跳过 Phase 0 Skill 选择）
+    max_workers: int = 3                   # 并发数，Phase 1/2 使用
 
 
 def _assemble_modeling(pid: str, kb_name: str | None, body: AskRequest) -> ModelingContext:
@@ -257,6 +259,8 @@ def ask(
             tech_doc=body.tech_doc,
             reference_cases=body.reference_cases,
             modeling=modeling,
+            skill_pre_selected=body.skill_pre_selected,
+            max_workers=body.max_workers,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -295,6 +299,8 @@ async def ask_stream(
                 tech_doc=body.tech_doc,
                 reference_cases=body.reference_cases,
                 modeling=modeling,
+                skill_pre_selected=body.skill_pre_selected,
+                max_workers=body.max_workers,
             ):
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         except GeneratorExit:
@@ -334,6 +340,8 @@ def ask_project(
             tech_doc=body.tech_doc,
             reference_cases=body.reference_cases,
             modeling=modeling,
+            skill_pre_selected=body.skill_pre_selected,
+            max_workers=body.max_workers,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -370,6 +378,8 @@ async def ask_project_stream(
                 tech_doc=body.tech_doc,
                 reference_cases=body.reference_cases,
                 modeling=modeling,
+                skill_pre_selected=body.skill_pre_selected,
+                max_workers=body.max_workers,
             ):
                 yield f"data: {json.dumps(event, ensure_ascii=False)}\n\n"
         except GeneratorExit:

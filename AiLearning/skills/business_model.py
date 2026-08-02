@@ -55,6 +55,7 @@ class RuleModel:
     condition: str
     risk: str
     related_skill: str        # Skill 注册名，如 "state_machine" / "boundary_value"
+    source_quote: str = ""    # 原文引用，用于追溯规则来源，防止 LLM 编造
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -124,8 +125,9 @@ class ImpactAnalysis:
     no_impact 为 True 时表示无需回归。
     """
     requirement_diffs: list[RequirementDiff]
-    regression_scope: list[str]
-    no_impact: bool
+    regression_scope: list[str]           # 受影响的业务模块名称
+    regression_focus: list[str] = ()      # 受影响规则对应 related_skill 的去重集合
+    no_impact: bool = False
 
 
 # ═══════════════════════════════════════════════════════════════════════

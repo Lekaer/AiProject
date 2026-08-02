@@ -16,6 +16,12 @@ from AiLearning.prompts.testcase_design import (
     TestCaseExpansionPrompt,
     TestPointGenerationPrompt,
 )
+from AiLearning.prompts.synthesis import (
+    DEFAULT_QUALITY_SCORING_PROMPT,
+    DEFAULT_VARIATION_PROMPT,
+    QualityScoringPrompt,
+    RequirementVariationPrompt,
+)
 
 __all__ = [
     "RAGPrompt",
@@ -35,4 +41,8 @@ __all__ = [
     "DEFAULT_IMPACT_ANALYSIS_PROMPT",
     "GenericImportPrompt",
     "DEFAULT_GENERIC_IMPORT_PROMPT",
+    "RequirementVariationPrompt",
+    "DEFAULT_VARIATION_PROMPT",
+    "QualityScoringPrompt",
+    "DEFAULT_QUALITY_SCORING_PROMPT",
 ]
