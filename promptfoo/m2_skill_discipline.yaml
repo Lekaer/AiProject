@@ -1,0 +1,91 @@
+# M2-5：任务级 skill 纪律评测
+# 输入用固定 flow/task JSON（绕过 parse，隔离其不稳定性），
+# 断言"加载集合 ⊆ 证据支持集"（判纪律不判数字）+ 非空 + ≤2 + 落盘 + final。
+# 运行：promptfoo eval -c promptfoo/m2_skill_discipline.yaml --no-cache
+
+description: M2 任务级 skill 纪律评测（⊆ 证据集）
+
+providers:
+  - id: file://task_provider.py
+    config:
+      pythonExecutable: /Users/kaka/PycharmProjects/AiProject/.venv/bin/python
+
+prompts:
+  - "run"
+
+tests:
+  - description: 同步类任务（第三方数据同步）→ 只允许 data_consistency/exception_path
+    vars:
+      flow_json: |
+        {"id": "F1", "name": "补充公司信息", "description": "商户续约时补充公司信息",
+         "preconditions": ["商户状态为合作中"], "relations": [],
+         "tasks": []}
+      task_json: |
+        {"id": "F1.T2", "name": "点击获取天眼查按钮", "type": "同步",
+         "description": "点击后调用天眼查接口，拉取最新工商信息（核心人员、公司地址、营业执照）并刷新表单显示",
+         "scenarios": ["存在暂存数据时获取", "无暂存数据时获取"],
+         "relations": [], "data_dependencies": ["天眼查接口", "公司信息模型表"],
+         "produces": ["更新后的最新工商信息显示"],
+         "rules": [
+           {"id": "F1.T2.R1", "condition": "点击获取天眼查按钮", "expected": "调用接口并用返回数据刷新表单对应字段"},
+           {"id": "F1.T2.R2", "condition": "天眼查接口返回失败或超时", "expected": "表单保留原数据并提示获取失败"}
+         ]}
+    assert:
+      - type: javascript
+        value: file://assertions/skill_discipline.js:assertSyncTask
+
+  - description: 限额录入任务（显式数值约束）→ 只允许 boundary_value
+    vars:
+      flow_json: |
+        {"id": "F1", "name": "优惠券发放", "description": "运营向用户发放折扣券",
+         "preconditions": [], "relations": [], "tasks": []}
+      task_json: |
+        {"id": "F1.T1", "name": "配置发放规则", "type": "录入",
+         "description": "运营配置折扣率（0%-100% 含边界）、每用户限领 1-10 张、单批总量上限 10000 张",
+         "scenarios": ["单批发放"], "relations": [], "data_dependencies": ["优惠券批次表"],
+         "produces": ["生效的发放规则"],
+         "rules": [
+           {"id": "F1.T1.R1", "condition": "折扣率超出 0%-100%", "expected": "拒绝保存并提示取值范围"},
+           {"id": "F1.T1.R2", "condition": "限领数量超出 1-10 张", "expected": "拒绝保存并提示取值范围"}
+         ]}
+    assert:
+      - type: javascript
+        value: file://assertions/skill_discipline.js:assertBoundaryTask
+
+  - description: 审批驳回重提任务（状态流转）→ 只允许 state_machine
+    vars:
+      flow_json: |
+        {"id": "F1", "name": "增店申请", "description": "商户提交增店申请，审核后生效",
+         "preconditions": ["商户状态为合作中"], "relations": [], "tasks": []}
+      task_json: |
+        {"id": "F1.T5", "name": "审核驳回后重新进入表单", "type": "审批",
+         "description": "申请被驳回后，商户重新进入表单修改并再次提交，表单状态从已驳回变为待审核",
+         "scenarios": ["驳回后修改重提", "驳回后放弃"],
+         "relations": [], "data_dependencies": ["申请表"],
+         "produces": ["待审核的申请单"],
+         "rules": [
+           {"id": "F1.T5.R1", "condition": "申请单状态为已驳回", "expected": "允许重新编辑并提交，状态流转为待审核"},
+           {"id": "F1.T5.R2", "condition": "申请单状态为已通过", "expected": "拒绝再次提交"}
+         ]}
+    assert:
+      - type: javascript
+        value: file://assertions/skill_discipline.js:assertStateTask
+
+  - description: 优化类任务（change=modified，既有表单加字段）→ 只允许 regression
+    vars:
+      flow_json: |
+        {"id": "F1", "name": "补充公司信息", "description": "商户续约时补充公司信息",
+         "preconditions": ["商户状态为合作中"], "relations": [], "tasks": []}
+      task_json: |
+        {"id": "F1.T3", "name": "暂存表单", "type": "录入", "change": "modified",
+         "description": "既有暂存功能优化：在原有暂存基础上，增加保存天眼查同步过来的最新工商信息字段",
+         "scenarios": ["首次暂存", "修改后再次暂存"],
+         "relations": [], "data_dependencies": ["流程暂存表"],
+         "produces": ["暂存数据"],
+         "rules": [
+           {"id": "F1.T3.R1", "condition": "点击暂存", "expected": "保存当前表单全部字段（含新增的天眼查字段）", "change": "modified"},
+           {"id": "F1.T3.R2", "condition": "再次进入暂存的表单", "expected": "回显暂存数据（含历史存量暂存数据）", "change": "unchanged_affected"}
+         ]}
+    assert:
+      - type: javascript
+        value: file://assertions/skill_discipline.js:assertRegressionTask

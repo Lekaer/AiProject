@@ -2,10 +2,8 @@ import logging
 from typing import Generator
 
 from AiLearning.agents.base import AgentResponse
-from AiLearning.agents.learning_agent import LearningAgent
 from AiLearning.agents.modeling_agent import ModelingAgent
 from AiLearning.agents.rag_agent import RAGAgent
-from AiLearning.agents.testcase_agent import TestCaseAgent
 from AiLearning.agents.testcase_design_agent import TestCaseDesignAgent
 from AiLearning.prompts.router import INTENT_DETECTION_PROMPT
 from AiLearning.service import get_client
@@ -21,7 +19,7 @@ def _init_registry():
     """懒加载注册内置 agent，幂等。"""
     if _agents:
         return
-    for agent_cls in (RAGAgent, TestCaseAgent, LearningAgent, TestCaseDesignAgent, ModelingAgent):
+    for agent_cls in (RAGAgent, TestCaseDesignAgent, ModelingAgent):
         instance = agent_cls()
         _agents[instance.name] = instance
 
@@ -36,7 +34,6 @@ def _get_agent(name: str):
 
 _KEYWORD_MAP: list[tuple[str, list[str]]] = [
     ("testcase_design", ["用例", "测试", "case", "test", "需求", "设计用例", "用例设计", "补充"]),
-    ("learning", ["解释", "学习", "计划", "路线", "实践"]),
 ]
 
 

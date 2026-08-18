@@ -7,3 +7,5 @@ data/synthesis/
 .env
 *.log
 .DS_Store
+traces/
+outputs/
