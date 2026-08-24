@@ -1,0 +1,28 @@
+# M2-5：parse_requirement 结构评测
+# 断言"结构合法性 + 关键元素存在性"，不断言精确数量（parse 跨轮不稳定）。
+# 运行：promptfoo eval -c promptfoo/m2_parse.yaml --no-cache
+
+description: M2 parse_requirement 结构评测（结构合法性 + 存在性）
+
+providers:
+  - id: file://parse_provider.py
+    config:
+      pythonExecutable: /Users/kaka/PycharmProjects/AiProject/.venv/bin/python
+
+prompts:
+  - "{{source}}"
+
+tests:
+  - description: 真实 PRD（已知不完善）→ 结构合法 + 必须发现待确认问题
+    vars:
+      source: AiLearning/docs/补充公司信息页优化.txt
+    assert:
+      - type: javascript
+        value: file://assertions/parse.js:assertRealDoc
+
+  - description: 极简文本需求 → 解析出最小结构
+    vars:
+      source: 商户可修改门店营业时间，每天一个时间段，开始时间必须早于结束时间，修改后次日生效。
+    assert:
+      - type: javascript
+        value: file://assertions/parse.js:assertInlineText

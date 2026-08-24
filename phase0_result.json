@@ -1,0 +1,1429 @@
+{
+  "evalId": "eval-GoJ-2026-07-01T10:36:52",
+  "results": {
+    "version": 3,
+    "timestamp": "2026-07-01T10:36:52.745Z",
+    "prompts": [
+      {
+        "id": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "raw": "{{question}}",
+        "label": "{{question}}",
+        "provider": "testcase_design_agent",
+        "metrics": {
+          "score": 4.5,
+          "testPassCount": 0,
+          "testFailCount": 6,
+          "testErrorCount": 0,
+          "assertPassCount": 18,
+          "assertFailCount": 6,
+          "totalLatencyMs": 947628,
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 6,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          },
+          "namedScores": {},
+          "namedScoresCount": {},
+          "namedScoreWeights": {},
+          "cost": 0
+        }
+      }
+    ],
+    "results": [
+      {
+        "cost": 0,
+        "error": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+        "gradingResult": {
+          "pass": false,
+          "score": 0.75,
+          "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": false,
+              "score": 0,
+              "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "e55b5335-9dfb-4221-ab80-1f3195ba0d69",
+        "latencyMs": 157938,
+        "namedScores": {},
+        "prompt": {
+          "raw": "",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"订单创建事务回滚：库存扣减成功但支付记录写入失败\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品A库存为10，用户U账户余额充足；数据库或中间件可注入支付表写入异常（如磁盘满、锁超时）\\\",\\n    \\\"steps\\\": [\\n      \\\"调用下单接口，用户U购买2件商品A\\\",\\n      \\\"在支付记录插入前触发数据库写入失败（模拟），观察事务行为\\\",\\n      \\\"查询订单表：确认是否存在该订单记录\\\",\\n      \\\"查询商品库存：确认商品A库存数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单表中无新增记录，商品A库存仍为10；数据库无脏数据或部分成功记录，事务完整回滚\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"下单接口幂等性：短时间内重复提交相同订单请求\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"订单服务开启幂等校验（基于请求唯一标识如token），商品B库存为5\\\",\\n    \\\"steps\\\": [\\n      \\\"构造下单请求，Header中携带唯一幂等键（如idempotent-key: ORDER-001）\\\",\\n      \\\"在200ms内连续发送两次完全相同的请求（包括幂等键）\\\",\\n      \\\"查询订单表，检查是否存在多条相同内容的订单\\\",\\n      \\\"查询商品B库存，验证实际扣减数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"仅创建一条订单记录，商品B库存扣减1次（如购买1件，库存变为4），无重复扣减或超卖\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"商品详情缓存一致性：更新后立即查询返回最新数据\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品C当前缓存价格为100元，缓存有效期未过；支持缓存手动或自动同步机制\\\",\\n    \\\"steps\\\": [\\n      \\\"通过管理端接口将商品C价格修改为120元\\\",\\n      \\\"在修改成功后100ms内调用商品详情查询接口（同一商品ID）\\\",\\n      \\\"检查响应中的价格字段\\\",\\n      \\\"再次查询缓存系统，确认缓存中商品C的价格\\\"\\n    ],\\n    \\\"expected\\\": \\\"查询接口返回价格120元，缓存中商品C的价格已更新为120元（或缓存已失效并回填新值），无旧数据残留\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"用户信息修改后读写一致：主从延迟场景下立即读取\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"系统配置读写分离，主库写、从库读；用户U当前昵称为“OldName”\\\",\\n    \\\"steps\\\": [\\n      \\\"调用用户信息修改接口，将用户U昵称改为“NewName”\\\",\\n      \\\"在接口返回成功后的10ms内，调用用户信息查询接口（不指定主库或强制读主）\\\",\\n      \\\"记录返回昵称值\\\",\\n      \\\"间隔20ms再次查询（模拟正常从库同步时间），观察值\\\"\\n    ],\\n    \\\"expected\\\": \\\"第一次查询应返回“NewName”（若读主库或主从同步极短），或返回“OldName”但在业务可接受时间内（如100ms）第二次查询返回“NewName”；确保写后读最终一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"主表删除级联处理：删除活动后关联数据同步失效\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"存在活动ACT-001，关联优惠券CP-001及用户参与记录PR-001，均为有效状态\\\",\\n    \\\"steps\\\": [\\n      \\\"调用活动删除接口，删除活动ACT-001\\\",\\n      \\\"查询优惠券表：检查CP-001的状态或是否被删除\\\",\\n      \\\"查询用户参与记录表：检查PR-001的状态或是否被删除\\\",\\n      \\\"检查业务逻辑中使用该活动ID的接口是否报错或返回空\\\"\\n    ],\\n    \\\"expected\\\": \\\"优惠券CP-001状态变为‘已失效’或记录被删除；参与记录PR-001状态同步变为‘已失效’或删除；任何引用该活动的查询不产生孤儿数据或业务异常\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"多条件筛选正交组合：分类、价格区间、品牌、排序方式Pairwise验证\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品库中有足够多样化数据：分类A/B，价格区间0-50/50-100/100+，品牌X/Y，排序方式价格升序/价格降序/销量\\\",\\n    \\\"steps\\\": [\\n      \\\"选择Pairwise组合：分类=A, 价格区间=0-50, 品牌=X, 排序=价格升序\\\",\\n      \\\"发送筛选请求，记录返回商品列表及排序\\\",\\n      \\\"选择另一组合：分类=B, 价格区间=50-100, 品牌=Y, 排序=销量\\\",\\n      \\\"发送筛选请求，记录结果\\\",\\n      \\\"覆盖边缘组合：分类=A, 价格区间=100+, 无品牌筛选, 排序=价格降序\\\",\\n      \\\"验证每种组合返回的商品均符合筛选条件且排序正确\\\"\\n    ],\\n    \\\"expected\\\": \\\"所有组合均返回正确筛选结果，无HTTP 500错误或空结果（除非实际无数据），SQL执行计划正常无异常日志\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"跨模块全链路数据传递：商品选择到支付成功金额、优惠一致性\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"购物车模块、订单模块、支付模块均可用；商品D原价100，会员价90，可叠加满减20元\\\",\\n    \\\"steps\\\": [\\n      \\\"在购物车中添加商品D，数量2，查看金额显示是否为180（会员价*2）\\\",\\n      \\\"进入下单页，选择使用满减券（满150减20），确认应付金额160\\\",\\n      \\\"提交订单，生成订单记录，检查订单金额、优惠拆分明细\\\",\\n      \\\"支付模块拉取订单信息，展示支付金额160\\\",\\n      \\\"完成支付，检查支付记录金额、订单状态同步为已支付\\\"\\n    ],\\n    \\\"expected\\\": \\\"购物车显示180，订单确认页显示180并使用优惠后160，订单记录金额160且优惠明细20，支付金额160，支付成功后订单状态为已支付；全链路数据无偏差\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"多优惠叠加规则验证：满减、折扣券、会员价同时使用\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"营销规则：会员价优先，满减与折扣券互斥（仅可选其一）；商品E原价200，会员价180，满200减30，折扣券8折\\\",\\n    \\\"steps\\\": [\\n      \\\"用户以会员身份将商品E加入购物车（数量2，原价400，会员价360）\\\",\\n      \\\"在下单页尝试同时选择满减券和折扣券\\\",\\n      \\\"验证系统行为：仅允许选择一种或提示互斥\\\",\\n      \\\"选择满减券，计算应付金额：360 - 30 = 330\\\",\\n      \\\"选择折扣券（替代满减），计算应付金额：180*2*0.8 = 288\\\",\\n      \\\"分别提交后检查订单优惠明细\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统不允许同时勾选满减和折扣券，提示规则互斥；单独选择时分别计算正确（满减330，折扣288），订单金额与计算一致，无优先级错误叠加\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"正常流程中插入异常步骤：下单时库存不足后恢复\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品F库存为3；用户已加购5件商品F\\\",\\n    \\\"steps\\\": [\\n      \\\"用户进入下单页，商品F数量5，系统应提示库存不足或限制数量\\\",\\n      \\\"用户将数量改为2后提交订单，订单创建成功，库存扣减为1\\\",\\n      \\\"此后模拟另一用户瞬间买走最后1件库存\\\",\\n      \\\"原用户再次修改数量为2（库存已变0），尝试提交\\\",\\n      \\\"验证系统返回明确的‘库存不足’错误，原订单状态不变\\\"\\n    ],\\n    \\\"expected\\\": \\\"首次改数量后下单成功；库存不足时提交被拒，订单不生成且无扣减，原已创建订单不受影响，数据一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"并发操作组合：多用户同时抢购同一商品与优惠券\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品G库存5，优惠券C-100数量2张，均可使用；3个用户同时操作\\\",\\n    \\\"steps\\\": [\\n      \\\"三个用户同时发起对商品G的购买请求（每人购买2件）\\\",\\n      \\\"同时，两个用户并发领取优惠券C-100，第三个用户使用已领取的C-100下单\\\",\\n      \\\"检查最终库存：商品G库存应减少至0或按实际成功笔数计算，不超发\\\",\\n      \\\"检查优惠券发放与使用数量，总和不超过总量2张\\\"\\n    ],\\n    \\\"expected\\\": \\\"商品库存扣减后不低于0，总售出不超过5件；优惠券发放与使用数据一致，无超发或死锁导致的挂起；所有请求有明确成功或失败响应\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"boundary_value\",\"exception_path\",\"permission_security\",\"state_machine\",\"data_consistency\",\"combinatorial\"]}",
+          "latencyMs": 157938,
+          "cached": true,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "8823",
+                "content-type": "application/json",
+                "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "boundary_value",
+            "exception_path",
+            "permission_security",
+            "state_machine",
+            "data_consistency",
+            "combinatorial"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 0.75,
+        "success": false,
+        "testCase": {
+          "question": "某优惠券系统支持折扣率0%-100%、满减门槛1-50000元、每人限领1-10张、券有效期1-365天，请从边界值角度设计测试用例",
+          "expected_skills": [
+            "boundary_value"
+          ],
+          "expected_test_point_keywords": [
+            "折扣率",
+            "满减门槛",
+            "限领数量",
+            "有效期",
+            "边界值"
+          ],
+          "evaluation_focus": "验证仅含数值边界的需求片段能否让模型精准选择 boundary_value，不被其他维度干扰",
+          "requirement_doc": "优惠券系统需求：折扣率范围0%至100%，支持2位小数精度。满减门槛金额最低1元、最高50000元。每人限领优惠券数量1-10张。优惠券有效期最短1天、最长365天。订单金额计算时折扣优先于满减，结果向下取整到分。折扣后单价不得低于商品成本价。",
+          "description": "Row #1",
+          "vars": {
+            "kb_name": "eval_kb"
+          },
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 0,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "8823",
+              "content-type": "application/json",
+              "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 1
+      },
+      {
+        "cost": 0,
+        "error": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+        "gradingResult": {
+          "pass": false,
+          "score": 0.75,
+          "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": false,
+              "score": 0,
+              "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "fde198de-800a-4db8-8418-466f955db068",
+        "latencyMs": 157938,
+        "namedScores": {},
+        "prompt": {
+          "raw": "",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"订单创建事务回滚：库存扣减成功但支付记录写入失败\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品A库存为10，用户U账户余额充足；数据库或中间件可注入支付表写入异常（如磁盘满、锁超时）\\\",\\n    \\\"steps\\\": [\\n      \\\"调用下单接口，用户U购买2件商品A\\\",\\n      \\\"在支付记录插入前触发数据库写入失败（模拟），观察事务行为\\\",\\n      \\\"查询订单表：确认是否存在该订单记录\\\",\\n      \\\"查询商品库存：确认商品A库存数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单表中无新增记录，商品A库存仍为10；数据库无脏数据或部分成功记录，事务完整回滚\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"下单接口幂等性：短时间内重复提交相同订单请求\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"订单服务开启幂等校验（基于请求唯一标识如token），商品B库存为5\\\",\\n    \\\"steps\\\": [\\n      \\\"构造下单请求，Header中携带唯一幂等键（如idempotent-key: ORDER-001）\\\",\\n      \\\"在200ms内连续发送两次完全相同的请求（包括幂等键）\\\",\\n      \\\"查询订单表，检查是否存在多条相同内容的订单\\\",\\n      \\\"查询商品B库存，验证实际扣减数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"仅创建一条订单记录，商品B库存扣减1次（如购买1件，库存变为4），无重复扣减或超卖\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"商品详情缓存一致性：更新后立即查询返回最新数据\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品C当前缓存价格为100元，缓存有效期未过；支持缓存手动或自动同步机制\\\",\\n    \\\"steps\\\": [\\n      \\\"通过管理端接口将商品C价格修改为120元\\\",\\n      \\\"在修改成功后100ms内调用商品详情查询接口（同一商品ID）\\\",\\n      \\\"检查响应中的价格字段\\\",\\n      \\\"再次查询缓存系统，确认缓存中商品C的价格\\\"\\n    ],\\n    \\\"expected\\\": \\\"查询接口返回价格120元，缓存中商品C的价格已更新为120元（或缓存已失效并回填新值），无旧数据残留\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"用户信息修改后读写一致：主从延迟场景下立即读取\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"系统配置读写分离，主库写、从库读；用户U当前昵称为“OldName”\\\",\\n    \\\"steps\\\": [\\n      \\\"调用用户信息修改接口，将用户U昵称改为“NewName”\\\",\\n      \\\"在接口返回成功后的10ms内，调用用户信息查询接口（不指定主库或强制读主）\\\",\\n      \\\"记录返回昵称值\\\",\\n      \\\"间隔20ms再次查询（模拟正常从库同步时间），观察值\\\"\\n    ],\\n    \\\"expected\\\": \\\"第一次查询应返回“NewName”（若读主库或主从同步极短），或返回“OldName”但在业务可接受时间内（如100ms）第二次查询返回“NewName”；确保写后读最终一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"主表删除级联处理：删除活动后关联数据同步失效\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"存在活动ACT-001，关联优惠券CP-001及用户参与记录PR-001，均为有效状态\\\",\\n    \\\"steps\\\": [\\n      \\\"调用活动删除接口，删除活动ACT-001\\\",\\n      \\\"查询优惠券表：检查CP-001的状态或是否被删除\\\",\\n      \\\"查询用户参与记录表：检查PR-001的状态或是否被删除\\\",\\n      \\\"检查业务逻辑中使用该活动ID的接口是否报错或返回空\\\"\\n    ],\\n    \\\"expected\\\": \\\"优惠券CP-001状态变为‘已失效’或记录被删除；参与记录PR-001状态同步变为‘已失效’或删除；任何引用该活动的查询不产生孤儿数据或业务异常\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"多条件筛选正交组合：分类、价格区间、品牌、排序方式Pairwise验证\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品库中有足够多样化数据：分类A/B，价格区间0-50/50-100/100+，品牌X/Y，排序方式价格升序/价格降序/销量\\\",\\n    \\\"steps\\\": [\\n      \\\"选择Pairwise组合：分类=A, 价格区间=0-50, 品牌=X, 排序=价格升序\\\",\\n      \\\"发送筛选请求，记录返回商品列表及排序\\\",\\n      \\\"选择另一组合：分类=B, 价格区间=50-100, 品牌=Y, 排序=销量\\\",\\n      \\\"发送筛选请求，记录结果\\\",\\n      \\\"覆盖边缘组合：分类=A, 价格区间=100+, 无品牌筛选, 排序=价格降序\\\",\\n      \\\"验证每种组合返回的商品均符合筛选条件且排序正确\\\"\\n    ],\\n    \\\"expected\\\": \\\"所有组合均返回正确筛选结果，无HTTP 500错误或空结果（除非实际无数据），SQL执行计划正常无异常日志\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"跨模块全链路数据传递：商品选择到支付成功金额、优惠一致性\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"购物车模块、订单模块、支付模块均可用；商品D原价100，会员价90，可叠加满减20元\\\",\\n    \\\"steps\\\": [\\n      \\\"在购物车中添加商品D，数量2，查看金额显示是否为180（会员价*2）\\\",\\n      \\\"进入下单页，选择使用满减券（满150减20），确认应付金额160\\\",\\n      \\\"提交订单，生成订单记录，检查订单金额、优惠拆分明细\\\",\\n      \\\"支付模块拉取订单信息，展示支付金额160\\\",\\n      \\\"完成支付，检查支付记录金额、订单状态同步为已支付\\\"\\n    ],\\n    \\\"expected\\\": \\\"购物车显示180，订单确认页显示180并使用优惠后160，订单记录金额160且优惠明细20，支付金额160，支付成功后订单状态为已支付；全链路数据无偏差\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"多优惠叠加规则验证：满减、折扣券、会员价同时使用\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"营销规则：会员价优先，满减与折扣券互斥（仅可选其一）；商品E原价200，会员价180，满200减30，折扣券8折\\\",\\n    \\\"steps\\\": [\\n      \\\"用户以会员身份将商品E加入购物车（数量2，原价400，会员价360）\\\",\\n      \\\"在下单页尝试同时选择满减券和折扣券\\\",\\n      \\\"验证系统行为：仅允许选择一种或提示互斥\\\",\\n      \\\"选择满减券，计算应付金额：360 - 30 = 330\\\",\\n      \\\"选择折扣券（替代满减），计算应付金额：180*2*0.8 = 288\\\",\\n      \\\"分别提交后检查订单优惠明细\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统不允许同时勾选满减和折扣券，提示规则互斥；单独选择时分别计算正确（满减330，折扣288），订单金额与计算一致，无优先级错误叠加\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"正常流程中插入异常步骤：下单时库存不足后恢复\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品F库存为3；用户已加购5件商品F\\\",\\n    \\\"steps\\\": [\\n      \\\"用户进入下单页，商品F数量5，系统应提示库存不足或限制数量\\\",\\n      \\\"用户将数量改为2后提交订单，订单创建成功，库存扣减为1\\\",\\n      \\\"此后模拟另一用户瞬间买走最后1件库存\\\",\\n      \\\"原用户再次修改数量为2（库存已变0），尝试提交\\\",\\n      \\\"验证系统返回明确的‘库存不足’错误，原订单状态不变\\\"\\n    ],\\n    \\\"expected\\\": \\\"首次改数量后下单成功；库存不足时提交被拒，订单不生成且无扣减，原已创建订单不受影响，数据一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"并发操作组合：多用户同时抢购同一商品与优惠券\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品G库存5，优惠券C-100数量2张，均可使用；3个用户同时操作\\\",\\n    \\\"steps\\\": [\\n      \\\"三个用户同时发起对商品G的购买请求（每人购买2件）\\\",\\n      \\\"同时，两个用户并发领取优惠券C-100，第三个用户使用已领取的C-100下单\\\",\\n      \\\"检查最终库存：商品G库存应减少至0或按实际成功笔数计算，不超发\\\",\\n      \\\"检查优惠券发放与使用数量，总和不超过总量2张\\\"\\n    ],\\n    \\\"expected\\\": \\\"商品库存扣减后不低于0，总售出不超过5件；优惠券发放与使用数据一致，无超发或死锁导致的挂起；所有请求有明确成功或失败响应\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"boundary_value\",\"exception_path\",\"permission_security\",\"state_machine\",\"data_consistency\",\"combinatorial\"]}",
+          "latencyMs": 157938,
+          "cached": true,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "8823",
+                "content-type": "application/json",
+                "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "boundary_value",
+            "exception_path",
+            "permission_security",
+            "state_machine",
+            "data_consistency",
+            "combinatorial"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 0.75,
+        "success": false,
+        "testCase": {
+          "question": "某支付系统依赖第三方支付网关和消息队列完成交易，请从异常路径角度设计测试用例",
+          "expected_skills": [
+            "exception_path"
+          ],
+          "expected_test_point_keywords": [
+            "支付网关",
+            "超时",
+            "消息队列",
+            "重试",
+            "异常"
+          ],
+          "evaluation_focus": "验证仅含外部依赖异常描述的需求片段能否让模型精准选择 exception_path，不被其他维度干扰",
+          "requirement_doc": "订单支付流程：用户提交订单后调用第三方支付网关扣款，扣款成功后通过消息队列通知物流系统发货。支付网关调用超时时间为30秒，消息队列支持最多3次重试投递。系统需记录每次调用的请求和响应日志用于问题排查。",
+          "description": "Row #2",
+          "vars": {
+            "kb_name": "eval_kb"
+          },
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 1,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "8823",
+              "content-type": "application/json",
+              "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 1
+      },
+      {
+        "cost": 0,
+        "error": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+        "gradingResult": {
+          "pass": false,
+          "score": 0.75,
+          "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": false,
+              "score": 0,
+              "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "27087553-6eed-4f26-9137-9ef1e74cb9f0",
+        "latencyMs": 157938,
+        "namedScores": {},
+        "prompt": {
+          "raw": "",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"订单创建事务回滚：库存扣减成功但支付记录写入失败\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品A库存为10，用户U账户余额充足；数据库或中间件可注入支付表写入异常（如磁盘满、锁超时）\\\",\\n    \\\"steps\\\": [\\n      \\\"调用下单接口，用户U购买2件商品A\\\",\\n      \\\"在支付记录插入前触发数据库写入失败（模拟），观察事务行为\\\",\\n      \\\"查询订单表：确认是否存在该订单记录\\\",\\n      \\\"查询商品库存：确认商品A库存数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单表中无新增记录，商品A库存仍为10；数据库无脏数据或部分成功记录，事务完整回滚\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"下单接口幂等性：短时间内重复提交相同订单请求\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"订单服务开启幂等校验（基于请求唯一标识如token），商品B库存为5\\\",\\n    \\\"steps\\\": [\\n      \\\"构造下单请求，Header中携带唯一幂等键（如idempotent-key: ORDER-001）\\\",\\n      \\\"在200ms内连续发送两次完全相同的请求（包括幂等键）\\\",\\n      \\\"查询订单表，检查是否存在多条相同内容的订单\\\",\\n      \\\"查询商品B库存，验证实际扣减数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"仅创建一条订单记录，商品B库存扣减1次（如购买1件，库存变为4），无重复扣减或超卖\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"商品详情缓存一致性：更新后立即查询返回最新数据\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品C当前缓存价格为100元，缓存有效期未过；支持缓存手动或自动同步机制\\\",\\n    \\\"steps\\\": [\\n      \\\"通过管理端接口将商品C价格修改为120元\\\",\\n      \\\"在修改成功后100ms内调用商品详情查询接口（同一商品ID）\\\",\\n      \\\"检查响应中的价格字段\\\",\\n      \\\"再次查询缓存系统，确认缓存中商品C的价格\\\"\\n    ],\\n    \\\"expected\\\": \\\"查询接口返回价格120元，缓存中商品C的价格已更新为120元（或缓存已失效并回填新值），无旧数据残留\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"用户信息修改后读写一致：主从延迟场景下立即读取\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"系统配置读写分离，主库写、从库读；用户U当前昵称为“OldName”\\\",\\n    \\\"steps\\\": [\\n      \\\"调用用户信息修改接口，将用户U昵称改为“NewName”\\\",\\n      \\\"在接口返回成功后的10ms内，调用用户信息查询接口（不指定主库或强制读主）\\\",\\n      \\\"记录返回昵称值\\\",\\n      \\\"间隔20ms再次查询（模拟正常从库同步时间），观察值\\\"\\n    ],\\n    \\\"expected\\\": \\\"第一次查询应返回“NewName”（若读主库或主从同步极短），或返回“OldName”但在业务可接受时间内（如100ms）第二次查询返回“NewName”；确保写后读最终一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"主表删除级联处理：删除活动后关联数据同步失效\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"存在活动ACT-001，关联优惠券CP-001及用户参与记录PR-001，均为有效状态\\\",\\n    \\\"steps\\\": [\\n      \\\"调用活动删除接口，删除活动ACT-001\\\",\\n      \\\"查询优惠券表：检查CP-001的状态或是否被删除\\\",\\n      \\\"查询用户参与记录表：检查PR-001的状态或是否被删除\\\",\\n      \\\"检查业务逻辑中使用该活动ID的接口是否报错或返回空\\\"\\n    ],\\n    \\\"expected\\\": \\\"优惠券CP-001状态变为‘已失效’或记录被删除；参与记录PR-001状态同步变为‘已失效’或删除；任何引用该活动的查询不产生孤儿数据或业务异常\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"多条件筛选正交组合：分类、价格区间、品牌、排序方式Pairwise验证\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品库中有足够多样化数据：分类A/B，价格区间0-50/50-100/100+，品牌X/Y，排序方式价格升序/价格降序/销量\\\",\\n    \\\"steps\\\": [\\n      \\\"选择Pairwise组合：分类=A, 价格区间=0-50, 品牌=X, 排序=价格升序\\\",\\n      \\\"发送筛选请求，记录返回商品列表及排序\\\",\\n      \\\"选择另一组合：分类=B, 价格区间=50-100, 品牌=Y, 排序=销量\\\",\\n      \\\"发送筛选请求，记录结果\\\",\\n      \\\"覆盖边缘组合：分类=A, 价格区间=100+, 无品牌筛选, 排序=价格降序\\\",\\n      \\\"验证每种组合返回的商品均符合筛选条件且排序正确\\\"\\n    ],\\n    \\\"expected\\\": \\\"所有组合均返回正确筛选结果，无HTTP 500错误或空结果（除非实际无数据），SQL执行计划正常无异常日志\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"跨模块全链路数据传递：商品选择到支付成功金额、优惠一致性\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"购物车模块、订单模块、支付模块均可用；商品D原价100，会员价90，可叠加满减20元\\\",\\n    \\\"steps\\\": [\\n      \\\"在购物车中添加商品D，数量2，查看金额显示是否为180（会员价*2）\\\",\\n      \\\"进入下单页，选择使用满减券（满150减20），确认应付金额160\\\",\\n      \\\"提交订单，生成订单记录，检查订单金额、优惠拆分明细\\\",\\n      \\\"支付模块拉取订单信息，展示支付金额160\\\",\\n      \\\"完成支付，检查支付记录金额、订单状态同步为已支付\\\"\\n    ],\\n    \\\"expected\\\": \\\"购物车显示180，订单确认页显示180并使用优惠后160，订单记录金额160且优惠明细20，支付金额160，支付成功后订单状态为已支付；全链路数据无偏差\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"多优惠叠加规则验证：满减、折扣券、会员价同时使用\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"营销规则：会员价优先，满减与折扣券互斥（仅可选其一）；商品E原价200，会员价180，满200减30，折扣券8折\\\",\\n    \\\"steps\\\": [\\n      \\\"用户以会员身份将商品E加入购物车（数量2，原价400，会员价360）\\\",\\n      \\\"在下单页尝试同时选择满减券和折扣券\\\",\\n      \\\"验证系统行为：仅允许选择一种或提示互斥\\\",\\n      \\\"选择满减券，计算应付金额：360 - 30 = 330\\\",\\n      \\\"选择折扣券（替代满减），计算应付金额：180*2*0.8 = 288\\\",\\n      \\\"分别提交后检查订单优惠明细\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统不允许同时勾选满减和折扣券，提示规则互斥；单独选择时分别计算正确（满减330，折扣288），订单金额与计算一致，无优先级错误叠加\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"正常流程中插入异常步骤：下单时库存不足后恢复\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品F库存为3；用户已加购5件商品F\\\",\\n    \\\"steps\\\": [\\n      \\\"用户进入下单页，商品F数量5，系统应提示库存不足或限制数量\\\",\\n      \\\"用户将数量改为2后提交订单，订单创建成功，库存扣减为1\\\",\\n      \\\"此后模拟另一用户瞬间买走最后1件库存\\\",\\n      \\\"原用户再次修改数量为2（库存已变0），尝试提交\\\",\\n      \\\"验证系统返回明确的‘库存不足’错误，原订单状态不变\\\"\\n    ],\\n    \\\"expected\\\": \\\"首次改数量后下单成功；库存不足时提交被拒，订单不生成且无扣减，原已创建订单不受影响，数据一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"并发操作组合：多用户同时抢购同一商品与优惠券\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品G库存5，优惠券C-100数量2张，均可使用；3个用户同时操作\\\",\\n    \\\"steps\\\": [\\n      \\\"三个用户同时发起对商品G的购买请求（每人购买2件）\\\",\\n      \\\"同时，两个用户并发领取优惠券C-100，第三个用户使用已领取的C-100下单\\\",\\n      \\\"检查最终库存：商品G库存应减少至0或按实际成功笔数计算，不超发\\\",\\n      \\\"检查优惠券发放与使用数量，总和不超过总量2张\\\"\\n    ],\\n    \\\"expected\\\": \\\"商品库存扣减后不低于0，总售出不超过5件；优惠券发放与使用数据一致，无超发或死锁导致的挂起；所有请求有明确成功或失败响应\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"boundary_value\",\"exception_path\",\"permission_security\",\"state_machine\",\"data_consistency\",\"combinatorial\"]}",
+          "latencyMs": 157938,
+          "cached": true,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "8823",
+                "content-type": "application/json",
+                "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "boundary_value",
+            "exception_path",
+            "permission_security",
+            "state_machine",
+            "data_consistency",
+            "combinatorial"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 0.75,
+        "success": false,
+        "testCase": {
+          "question": "某后台管理系统分为普通用户、部门主管、系统管理员三级角色，请从权限安全角度设计测试用例",
+          "expected_skills": [
+            "permission_security"
+          ],
+          "expected_test_point_keywords": [
+            "角色",
+            "脱敏",
+            "JWT",
+            "越权",
+            "401"
+          ],
+          "evaluation_focus": "验证仅含角色权限描述的需求片段能否让模型精准选择 permission_security，不被其他维度干扰",
+          "requirement_doc": "系统角色分为普通用户、部门主管、系统管理员三级。用户列表页仅主管和管理员可见。个人敏感字段（身份证号、手机号）前端展示时需脱敏。API接口需校验JWT token，过期返回401。用户仅可修改本人信息，主管可修改本部门成员信息，管理员可修改全部用户。",
+          "description": "Row #3",
+          "vars": {
+            "kb_name": "eval_kb"
+          },
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 2,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "8823",
+              "content-type": "application/json",
+              "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 1
+      },
+      {
+        "cost": 0,
+        "error": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+        "gradingResult": {
+          "pass": false,
+          "score": 0.75,
+          "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": false,
+              "score": 0,
+              "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "5b015164-b080-49f3-8c05-0245eb7b6417",
+        "latencyMs": 157938,
+        "namedScores": {},
+        "prompt": {
+          "raw": "",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"订单创建事务回滚：库存扣减成功但支付记录写入失败\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品A库存为10，用户U账户余额充足；数据库或中间件可注入支付表写入异常（如磁盘满、锁超时）\\\",\\n    \\\"steps\\\": [\\n      \\\"调用下单接口，用户U购买2件商品A\\\",\\n      \\\"在支付记录插入前触发数据库写入失败（模拟），观察事务行为\\\",\\n      \\\"查询订单表：确认是否存在该订单记录\\\",\\n      \\\"查询商品库存：确认商品A库存数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单表中无新增记录，商品A库存仍为10；数据库无脏数据或部分成功记录，事务完整回滚\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"下单接口幂等性：短时间内重复提交相同订单请求\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"订单服务开启幂等校验（基于请求唯一标识如token），商品B库存为5\\\",\\n    \\\"steps\\\": [\\n      \\\"构造下单请求，Header中携带唯一幂等键（如idempotent-key: ORDER-001）\\\",\\n      \\\"在200ms内连续发送两次完全相同的请求（包括幂等键）\\\",\\n      \\\"查询订单表，检查是否存在多条相同内容的订单\\\",\\n      \\\"查询商品B库存，验证实际扣减数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"仅创建一条订单记录，商品B库存扣减1次（如购买1件，库存变为4），无重复扣减或超卖\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"商品详情缓存一致性：更新后立即查询返回最新数据\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品C当前缓存价格为100元，缓存有效期未过；支持缓存手动或自动同步机制\\\",\\n    \\\"steps\\\": [\\n      \\\"通过管理端接口将商品C价格修改为120元\\\",\\n      \\\"在修改成功后100ms内调用商品详情查询接口（同一商品ID）\\\",\\n      \\\"检查响应中的价格字段\\\",\\n      \\\"再次查询缓存系统，确认缓存中商品C的价格\\\"\\n    ],\\n    \\\"expected\\\": \\\"查询接口返回价格120元，缓存中商品C的价格已更新为120元（或缓存已失效并回填新值），无旧数据残留\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"用户信息修改后读写一致：主从延迟场景下立即读取\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"系统配置读写分离，主库写、从库读；用户U当前昵称为“OldName”\\\",\\n    \\\"steps\\\": [\\n      \\\"调用用户信息修改接口，将用户U昵称改为“NewName”\\\",\\n      \\\"在接口返回成功后的10ms内，调用用户信息查询接口（不指定主库或强制读主）\\\",\\n      \\\"记录返回昵称值\\\",\\n      \\\"间隔20ms再次查询（模拟正常从库同步时间），观察值\\\"\\n    ],\\n    \\\"expected\\\": \\\"第一次查询应返回“NewName”（若读主库或主从同步极短），或返回“OldName”但在业务可接受时间内（如100ms）第二次查询返回“NewName”；确保写后读最终一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"主表删除级联处理：删除活动后关联数据同步失效\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"存在活动ACT-001，关联优惠券CP-001及用户参与记录PR-001，均为有效状态\\\",\\n    \\\"steps\\\": [\\n      \\\"调用活动删除接口，删除活动ACT-001\\\",\\n      \\\"查询优惠券表：检查CP-001的状态或是否被删除\\\",\\n      \\\"查询用户参与记录表：检查PR-001的状态或是否被删除\\\",\\n      \\\"检查业务逻辑中使用该活动ID的接口是否报错或返回空\\\"\\n    ],\\n    \\\"expected\\\": \\\"优惠券CP-001状态变为‘已失效’或记录被删除；参与记录PR-001状态同步变为‘已失效’或删除；任何引用该活动的查询不产生孤儿数据或业务异常\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"多条件筛选正交组合：分类、价格区间、品牌、排序方式Pairwise验证\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品库中有足够多样化数据：分类A/B，价格区间0-50/50-100/100+，品牌X/Y，排序方式价格升序/价格降序/销量\\\",\\n    \\\"steps\\\": [\\n      \\\"选择Pairwise组合：分类=A, 价格区间=0-50, 品牌=X, 排序=价格升序\\\",\\n      \\\"发送筛选请求，记录返回商品列表及排序\\\",\\n      \\\"选择另一组合：分类=B, 价格区间=50-100, 品牌=Y, 排序=销量\\\",\\n      \\\"发送筛选请求，记录结果\\\",\\n      \\\"覆盖边缘组合：分类=A, 价格区间=100+, 无品牌筛选, 排序=价格降序\\\",\\n      \\\"验证每种组合返回的商品均符合筛选条件且排序正确\\\"\\n    ],\\n    \\\"expected\\\": \\\"所有组合均返回正确筛选结果，无HTTP 500错误或空结果（除非实际无数据），SQL执行计划正常无异常日志\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"跨模块全链路数据传递：商品选择到支付成功金额、优惠一致性\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"购物车模块、订单模块、支付模块均可用；商品D原价100，会员价90，可叠加满减20元\\\",\\n    \\\"steps\\\": [\\n      \\\"在购物车中添加商品D，数量2，查看金额显示是否为180（会员价*2）\\\",\\n      \\\"进入下单页，选择使用满减券（满150减20），确认应付金额160\\\",\\n      \\\"提交订单，生成订单记录，检查订单金额、优惠拆分明细\\\",\\n      \\\"支付模块拉取订单信息，展示支付金额160\\\",\\n      \\\"完成支付，检查支付记录金额、订单状态同步为已支付\\\"\\n    ],\\n    \\\"expected\\\": \\\"购物车显示180，订单确认页显示180并使用优惠后160，订单记录金额160且优惠明细20，支付金额160，支付成功后订单状态为已支付；全链路数据无偏差\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"多优惠叠加规则验证：满减、折扣券、会员价同时使用\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"营销规则：会员价优先，满减与折扣券互斥（仅可选其一）；商品E原价200，会员价180，满200减30，折扣券8折\\\",\\n    \\\"steps\\\": [\\n      \\\"用户以会员身份将商品E加入购物车（数量2，原价400，会员价360）\\\",\\n      \\\"在下单页尝试同时选择满减券和折扣券\\\",\\n      \\\"验证系统行为：仅允许选择一种或提示互斥\\\",\\n      \\\"选择满减券，计算应付金额：360 - 30 = 330\\\",\\n      \\\"选择折扣券（替代满减），计算应付金额：180*2*0.8 = 288\\\",\\n      \\\"分别提交后检查订单优惠明细\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统不允许同时勾选满减和折扣券，提示规则互斥；单独选择时分别计算正确（满减330，折扣288），订单金额与计算一致，无优先级错误叠加\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"正常流程中插入异常步骤：下单时库存不足后恢复\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品F库存为3；用户已加购5件商品F\\\",\\n    \\\"steps\\\": [\\n      \\\"用户进入下单页，商品F数量5，系统应提示库存不足或限制数量\\\",\\n      \\\"用户将数量改为2后提交订单，订单创建成功，库存扣减为1\\\",\\n      \\\"此后模拟另一用户瞬间买走最后1件库存\\\",\\n      \\\"原用户再次修改数量为2（库存已变0），尝试提交\\\",\\n      \\\"验证系统返回明确的‘库存不足’错误，原订单状态不变\\\"\\n    ],\\n    \\\"expected\\\": \\\"首次改数量后下单成功；库存不足时提交被拒，订单不生成且无扣减，原已创建订单不受影响，数据一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"并发操作组合：多用户同时抢购同一商品与优惠券\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品G库存5，优惠券C-100数量2张，均可使用；3个用户同时操作\\\",\\n    \\\"steps\\\": [\\n      \\\"三个用户同时发起对商品G的购买请求（每人购买2件）\\\",\\n      \\\"同时，两个用户并发领取优惠券C-100，第三个用户使用已领取的C-100下单\\\",\\n      \\\"检查最终库存：商品G库存应减少至0或按实际成功笔数计算，不超发\\\",\\n      \\\"检查优惠券发放与使用数量，总和不超过总量2张\\\"\\n    ],\\n    \\\"expected\\\": \\\"商品库存扣减后不低于0，总售出不超过5件；优惠券发放与使用数据一致，无超发或死锁导致的挂起；所有请求有明确成功或失败响应\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"boundary_value\",\"exception_path\",\"permission_security\",\"state_machine\",\"data_consistency\",\"combinatorial\"]}",
+          "latencyMs": 157938,
+          "cached": true,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "8823",
+                "content-type": "application/json",
+                "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "boundary_value",
+            "exception_path",
+            "permission_security",
+            "state_machine",
+            "data_consistency",
+            "combinatorial"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 0.75,
+        "success": false,
+        "testCase": {
+          "question": "某请假系统中申请单存在草稿→待审批→已通过/已驳回的状态流转，请从状态机角度设计测试用例",
+          "expected_skills": [
+            "state_machine"
+          ],
+          "expected_test_point_keywords": [
+            "草稿",
+            "待审批",
+            "已通过",
+            "已驳回",
+            "状态流转"
+          ],
+          "evaluation_focus": "验证仅含状态流转描述的需求片段能否让模型精准选择 state_machine，不被其他维度干扰",
+          "requirement_doc": "请假申请单状态包括草稿、待审批、已通过、已驳回。草稿编辑后提交进入待审批。待审批下审批人可执行通过或驳回。已通过可被撤销回到待审批。已驳回为终态不可再操作。每次状态变更需记录操作人和操作时间。",
+          "description": "Row #4",
+          "vars": {
+            "kb_name": "eval_kb"
+          },
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 3,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "8823",
+              "content-type": "application/json",
+              "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 1
+      },
+      {
+        "cost": 0,
+        "error": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+        "gradingResult": {
+          "pass": false,
+          "score": 0.75,
+          "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": false,
+              "score": 0,
+              "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "d6820709-b4fb-4093-bbc6-d24c96e1be8f",
+        "latencyMs": 157938,
+        "namedScores": {},
+        "prompt": {
+          "raw": "",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"订单创建事务回滚：库存扣减成功但支付记录写入失败\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品A库存为10，用户U账户余额充足；数据库或中间件可注入支付表写入异常（如磁盘满、锁超时）\\\",\\n    \\\"steps\\\": [\\n      \\\"调用下单接口，用户U购买2件商品A\\\",\\n      \\\"在支付记录插入前触发数据库写入失败（模拟），观察事务行为\\\",\\n      \\\"查询订单表：确认是否存在该订单记录\\\",\\n      \\\"查询商品库存：确认商品A库存数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单表中无新增记录，商品A库存仍为10；数据库无脏数据或部分成功记录，事务完整回滚\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"下单接口幂等性：短时间内重复提交相同订单请求\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"订单服务开启幂等校验（基于请求唯一标识如token），商品B库存为5\\\",\\n    \\\"steps\\\": [\\n      \\\"构造下单请求，Header中携带唯一幂等键（如idempotent-key: ORDER-001）\\\",\\n      \\\"在200ms内连续发送两次完全相同的请求（包括幂等键）\\\",\\n      \\\"查询订单表，检查是否存在多条相同内容的订单\\\",\\n      \\\"查询商品B库存，验证实际扣减数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"仅创建一条订单记录，商品B库存扣减1次（如购买1件，库存变为4），无重复扣减或超卖\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"商品详情缓存一致性：更新后立即查询返回最新数据\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品C当前缓存价格为100元，缓存有效期未过；支持缓存手动或自动同步机制\\\",\\n    \\\"steps\\\": [\\n      \\\"通过管理端接口将商品C价格修改为120元\\\",\\n      \\\"在修改成功后100ms内调用商品详情查询接口（同一商品ID）\\\",\\n      \\\"检查响应中的价格字段\\\",\\n      \\\"再次查询缓存系统，确认缓存中商品C的价格\\\"\\n    ],\\n    \\\"expected\\\": \\\"查询接口返回价格120元，缓存中商品C的价格已更新为120元（或缓存已失效并回填新值），无旧数据残留\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"用户信息修改后读写一致：主从延迟场景下立即读取\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"系统配置读写分离，主库写、从库读；用户U当前昵称为“OldName”\\\",\\n    \\\"steps\\\": [\\n      \\\"调用用户信息修改接口，将用户U昵称改为“NewName”\\\",\\n      \\\"在接口返回成功后的10ms内，调用用户信息查询接口（不指定主库或强制读主）\\\",\\n      \\\"记录返回昵称值\\\",\\n      \\\"间隔20ms再次查询（模拟正常从库同步时间），观察值\\\"\\n    ],\\n    \\\"expected\\\": \\\"第一次查询应返回“NewName”（若读主库或主从同步极短），或返回“OldName”但在业务可接受时间内（如100ms）第二次查询返回“NewName”；确保写后读最终一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"主表删除级联处理：删除活动后关联数据同步失效\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"存在活动ACT-001，关联优惠券CP-001及用户参与记录PR-001，均为有效状态\\\",\\n    \\\"steps\\\": [\\n      \\\"调用活动删除接口，删除活动ACT-001\\\",\\n      \\\"查询优惠券表：检查CP-001的状态或是否被删除\\\",\\n      \\\"查询用户参与记录表：检查PR-001的状态或是否被删除\\\",\\n      \\\"检查业务逻辑中使用该活动ID的接口是否报错或返回空\\\"\\n    ],\\n    \\\"expected\\\": \\\"优惠券CP-001状态变为‘已失效’或记录被删除；参与记录PR-001状态同步变为‘已失效’或删除；任何引用该活动的查询不产生孤儿数据或业务异常\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"多条件筛选正交组合：分类、价格区间、品牌、排序方式Pairwise验证\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品库中有足够多样化数据：分类A/B，价格区间0-50/50-100/100+，品牌X/Y，排序方式价格升序/价格降序/销量\\\",\\n    \\\"steps\\\": [\\n      \\\"选择Pairwise组合：分类=A, 价格区间=0-50, 品牌=X, 排序=价格升序\\\",\\n      \\\"发送筛选请求，记录返回商品列表及排序\\\",\\n      \\\"选择另一组合：分类=B, 价格区间=50-100, 品牌=Y, 排序=销量\\\",\\n      \\\"发送筛选请求，记录结果\\\",\\n      \\\"覆盖边缘组合：分类=A, 价格区间=100+, 无品牌筛选, 排序=价格降序\\\",\\n      \\\"验证每种组合返回的商品均符合筛选条件且排序正确\\\"\\n    ],\\n    \\\"expected\\\": \\\"所有组合均返回正确筛选结果，无HTTP 500错误或空结果（除非实际无数据），SQL执行计划正常无异常日志\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"跨模块全链路数据传递：商品选择到支付成功金额、优惠一致性\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"购物车模块、订单模块、支付模块均可用；商品D原价100，会员价90，可叠加满减20元\\\",\\n    \\\"steps\\\": [\\n      \\\"在购物车中添加商品D，数量2，查看金额显示是否为180（会员价*2）\\\",\\n      \\\"进入下单页，选择使用满减券（满150减20），确认应付金额160\\\",\\n      \\\"提交订单，生成订单记录，检查订单金额、优惠拆分明细\\\",\\n      \\\"支付模块拉取订单信息，展示支付金额160\\\",\\n      \\\"完成支付，检查支付记录金额、订单状态同步为已支付\\\"\\n    ],\\n    \\\"expected\\\": \\\"购物车显示180，订单确认页显示180并使用优惠后160，订单记录金额160且优惠明细20，支付金额160，支付成功后订单状态为已支付；全链路数据无偏差\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"多优惠叠加规则验证：满减、折扣券、会员价同时使用\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"营销规则：会员价优先，满减与折扣券互斥（仅可选其一）；商品E原价200，会员价180，满200减30，折扣券8折\\\",\\n    \\\"steps\\\": [\\n      \\\"用户以会员身份将商品E加入购物车（数量2，原价400，会员价360）\\\",\\n      \\\"在下单页尝试同时选择满减券和折扣券\\\",\\n      \\\"验证系统行为：仅允许选择一种或提示互斥\\\",\\n      \\\"选择满减券，计算应付金额：360 - 30 = 330\\\",\\n      \\\"选择折扣券（替代满减），计算应付金额：180*2*0.8 = 288\\\",\\n      \\\"分别提交后检查订单优惠明细\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统不允许同时勾选满减和折扣券，提示规则互斥；单独选择时分别计算正确（满减330，折扣288），订单金额与计算一致，无优先级错误叠加\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"正常流程中插入异常步骤：下单时库存不足后恢复\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品F库存为3；用户已加购5件商品F\\\",\\n    \\\"steps\\\": [\\n      \\\"用户进入下单页，商品F数量5，系统应提示库存不足或限制数量\\\",\\n      \\\"用户将数量改为2后提交订单，订单创建成功，库存扣减为1\\\",\\n      \\\"此后模拟另一用户瞬间买走最后1件库存\\\",\\n      \\\"原用户再次修改数量为2（库存已变0），尝试提交\\\",\\n      \\\"验证系统返回明确的‘库存不足’错误，原订单状态不变\\\"\\n    ],\\n    \\\"expected\\\": \\\"首次改数量后下单成功；库存不足时提交被拒，订单不生成且无扣减，原已创建订单不受影响，数据一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"并发操作组合：多用户同时抢购同一商品与优惠券\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品G库存5，优惠券C-100数量2张，均可使用；3个用户同时操作\\\",\\n    \\\"steps\\\": [\\n      \\\"三个用户同时发起对商品G的购买请求（每人购买2件）\\\",\\n      \\\"同时，两个用户并发领取优惠券C-100，第三个用户使用已领取的C-100下单\\\",\\n      \\\"检查最终库存：商品G库存应减少至0或按实际成功笔数计算，不超发\\\",\\n      \\\"检查优惠券发放与使用数量，总和不超过总量2张\\\"\\n    ],\\n    \\\"expected\\\": \\\"商品库存扣减后不低于0，总售出不超过5件；优惠券发放与使用数据一致，无超发或死锁导致的挂起；所有请求有明确成功或失败响应\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"boundary_value\",\"exception_path\",\"permission_security\",\"state_machine\",\"data_consistency\",\"combinatorial\"]}",
+          "latencyMs": 157938,
+          "cached": true,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "8823",
+                "content-type": "application/json",
+                "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "boundary_value",
+            "exception_path",
+            "permission_security",
+            "state_machine",
+            "data_consistency",
+            "combinatorial"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 0.75,
+        "success": false,
+        "testCase": {
+          "question": "某账户系统采用Redis缓存加MySQL持久化的双写方案，请从数据一致性角度设计测试用例",
+          "expected_skills": [
+            "data_consistency"
+          ],
+          "expected_test_point_keywords": [
+            "缓存",
+            "数据库",
+            "双写",
+            "回滚",
+            "余额一致"
+          ],
+          "evaluation_focus": "验证仅含缓存持久化描述的需求片段能否让模型精准选择 data_consistency，不被其他维度干扰",
+          "requirement_doc": "用户账户余额采用Redis缓存加MySQL持久化双写方案。充值流程为先写数据库后更新缓存。若缓存更新失败，下次读取需从数据库加载最新值。批量扣款时若部分失败，已扣款项需回滚。账户余额变动日志与余额值需严格对应。",
+          "description": "Row #5",
+          "vars": {
+            "kb_name": "eval_kb"
+          },
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 4,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "8823",
+              "content-type": "application/json",
+              "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 1
+      },
+      {
+        "cost": 0,
+        "error": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+        "gradingResult": {
+          "pass": false,
+          "score": 0.75,
+          "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": false,
+              "score": 0,
+              "reason": "Custom function returned false\nconst expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "bf8161e0-7c1f-42aa-9af1-af8b41bfe73f",
+        "latencyMs": 157938,
+        "namedScores": {},
+        "prompt": {
+          "raw": "",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"订单创建事务回滚：库存扣减成功但支付记录写入失败\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品A库存为10，用户U账户余额充足；数据库或中间件可注入支付表写入异常（如磁盘满、锁超时）\\\",\\n    \\\"steps\\\": [\\n      \\\"调用下单接口，用户U购买2件商品A\\\",\\n      \\\"在支付记录插入前触发数据库写入失败（模拟），观察事务行为\\\",\\n      \\\"查询订单表：确认是否存在该订单记录\\\",\\n      \\\"查询商品库存：确认商品A库存数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单表中无新增记录，商品A库存仍为10；数据库无脏数据或部分成功记录，事务完整回滚\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"下单接口幂等性：短时间内重复提交相同订单请求\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"订单服务开启幂等校验（基于请求唯一标识如token），商品B库存为5\\\",\\n    \\\"steps\\\": [\\n      \\\"构造下单请求，Header中携带唯一幂等键（如idempotent-key: ORDER-001）\\\",\\n      \\\"在200ms内连续发送两次完全相同的请求（包括幂等键）\\\",\\n      \\\"查询订单表，检查是否存在多条相同内容的订单\\\",\\n      \\\"查询商品B库存，验证实际扣减数量\\\"\\n    ],\\n    \\\"expected\\\": \\\"仅创建一条订单记录，商品B库存扣减1次（如购买1件，库存变为4），无重复扣减或超卖\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"商品详情缓存一致性：更新后立即查询返回最新数据\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"商品C当前缓存价格为100元，缓存有效期未过；支持缓存手动或自动同步机制\\\",\\n    \\\"steps\\\": [\\n      \\\"通过管理端接口将商品C价格修改为120元\\\",\\n      \\\"在修改成功后100ms内调用商品详情查询接口（同一商品ID）\\\",\\n      \\\"检查响应中的价格字段\\\",\\n      \\\"再次查询缓存系统，确认缓存中商品C的价格\\\"\\n    ],\\n    \\\"expected\\\": \\\"查询接口返回价格120元，缓存中商品C的价格已更新为120元（或缓存已失效并回填新值），无旧数据残留\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"用户信息修改后读写一致：主从延迟场景下立即读取\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"系统配置读写分离，主库写、从库读；用户U当前昵称为“OldName”\\\",\\n    \\\"steps\\\": [\\n      \\\"调用用户信息修改接口，将用户U昵称改为“NewName”\\\",\\n      \\\"在接口返回成功后的10ms内，调用用户信息查询接口（不指定主库或强制读主）\\\",\\n      \\\"记录返回昵称值\\\",\\n      \\\"间隔20ms再次查询（模拟正常从库同步时间），观察值\\\"\\n    ],\\n    \\\"expected\\\": \\\"第一次查询应返回“NewName”（若读主库或主从同步极短），或返回“OldName”但在业务可接受时间内（如100ms）第二次查询返回“NewName”；确保写后读最终一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"主表删除级联处理：删除活动后关联数据同步失效\\\",\\n    \\\"type\\\": \\\"data_consistency\\\",\\n    \\\"precondition\\\": \\\"存在活动ACT-001，关联优惠券CP-001及用户参与记录PR-001，均为有效状态\\\",\\n    \\\"steps\\\": [\\n      \\\"调用活动删除接口，删除活动ACT-001\\\",\\n      \\\"查询优惠券表：检查CP-001的状态或是否被删除\\\",\\n      \\\"查询用户参与记录表：检查PR-001的状态或是否被删除\\\",\\n      \\\"检查业务逻辑中使用该活动ID的接口是否报错或返回空\\\"\\n    ],\\n    \\\"expected\\\": \\\"优惠券CP-001状态变为‘已失效’或记录被删除；参与记录PR-001状态同步变为‘已失效’或删除；任何引用该活动的查询不产生孤儿数据或业务异常\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"多条件筛选正交组合：分类、价格区间、品牌、排序方式Pairwise验证\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品库中有足够多样化数据：分类A/B，价格区间0-50/50-100/100+，品牌X/Y，排序方式价格升序/价格降序/销量\\\",\\n    \\\"steps\\\": [\\n      \\\"选择Pairwise组合：分类=A, 价格区间=0-50, 品牌=X, 排序=价格升序\\\",\\n      \\\"发送筛选请求，记录返回商品列表及排序\\\",\\n      \\\"选择另一组合：分类=B, 价格区间=50-100, 品牌=Y, 排序=销量\\\",\\n      \\\"发送筛选请求，记录结果\\\",\\n      \\\"覆盖边缘组合：分类=A, 价格区间=100+, 无品牌筛选, 排序=价格降序\\\",\\n      \\\"验证每种组合返回的商品均符合筛选条件且排序正确\\\"\\n    ],\\n    \\\"expected\\\": \\\"所有组合均返回正确筛选结果，无HTTP 500错误或空结果（除非实际无数据），SQL执行计划正常无异常日志\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"跨模块全链路数据传递：商品选择到支付成功金额、优惠一致性\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"购物车模块、订单模块、支付模块均可用；商品D原价100，会员价90，可叠加满减20元\\\",\\n    \\\"steps\\\": [\\n      \\\"在购物车中添加商品D，数量2，查看金额显示是否为180（会员价*2）\\\",\\n      \\\"进入下单页，选择使用满减券（满150减20），确认应付金额160\\\",\\n      \\\"提交订单，生成订单记录，检查订单金额、优惠拆分明细\\\",\\n      \\\"支付模块拉取订单信息，展示支付金额160\\\",\\n      \\\"完成支付，检查支付记录金额、订单状态同步为已支付\\\"\\n    ],\\n    \\\"expected\\\": \\\"购物车显示180，订单确认页显示180并使用优惠后160，订单记录金额160且优惠明细20，支付金额160，支付成功后订单状态为已支付；全链路数据无偏差\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"多优惠叠加规则验证：满减、折扣券、会员价同时使用\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"营销规则：会员价优先，满减与折扣券互斥（仅可选其一）；商品E原价200，会员价180，满200减30，折扣券8折\\\",\\n    \\\"steps\\\": [\\n      \\\"用户以会员身份将商品E加入购物车（数量2，原价400，会员价360）\\\",\\n      \\\"在下单页尝试同时选择满减券和折扣券\\\",\\n      \\\"验证系统行为：仅允许选择一种或提示互斥\\\",\\n      \\\"选择满减券，计算应付金额：360 - 30 = 330\\\",\\n      \\\"选择折扣券（替代满减），计算应付金额：180*2*0.8 = 288\\\",\\n      \\\"分别提交后检查订单优惠明细\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统不允许同时勾选满减和折扣券，提示规则互斥；单独选择时分别计算正确（满减330，折扣288），订单金额与计算一致，无优先级错误叠加\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"正常流程中插入异常步骤：下单时库存不足后恢复\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品F库存为3；用户已加购5件商品F\\\",\\n    \\\"steps\\\": [\\n      \\\"用户进入下单页，商品F数量5，系统应提示库存不足或限制数量\\\",\\n      \\\"用户将数量改为2后提交订单，订单创建成功，库存扣减为1\\\",\\n      \\\"此后模拟另一用户瞬间买走最后1件库存\\\",\\n      \\\"原用户再次修改数量为2（库存已变0），尝试提交\\\",\\n      \\\"验证系统返回明确的‘库存不足’错误，原订单状态不变\\\"\\n    ],\\n    \\\"expected\\\": \\\"首次改数量后下单成功；库存不足时提交被拒，订单不生成且无扣减，原已创建订单不受影响，数据一致\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"并发操作组合：多用户同时抢购同一商品与优惠券\\\",\\n    \\\"type\\\": \\\"combinatorial\\\",\\n    \\\"precondition\\\": \\\"商品G库存5，优惠券C-100数量2张，均可使用；3个用户同时操作\\\",\\n    \\\"steps\\\": [\\n      \\\"三个用户同时发起对商品G的购买请求（每人购买2件）\\\",\\n      \\\"同时，两个用户并发领取优惠券C-100，第三个用户使用已领取的C-100下单\\\",\\n      \\\"检查最终库存：商品G库存应减少至0或按实际成功笔数计算，不超发\\\",\\n      \\\"检查优惠券发放与使用数量，总和不超过总量2张\\\"\\n    ],\\n    \\\"expected\\\": \\\"商品库存扣减后不低于0，总售出不超过5件；优惠券发放与使用数据一致，无超发或死锁导致的挂起；所有请求有明确成功或失败响应\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"boundary_value\",\"exception_path\",\"permission_security\",\"state_machine\",\"data_consistency\",\"combinatorial\"]}",
+          "latencyMs": 157938,
+          "cached": true,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "8823",
+                "content-type": "application/json",
+                "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "boundary_value",
+            "exception_path",
+            "permission_security",
+            "state_machine",
+            "data_consistency",
+            "combinatorial"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 0.75,
+        "success": false,
+        "testCase": {
+          "question": "某电商下单流程涉及商品模块、库存模块、优惠券模块和支付模块的协同，请从组合场景角度设计测试用例",
+          "expected_skills": [
+            "combinatorial"
+          ],
+          "expected_test_point_keywords": [
+            "商品",
+            "库存",
+            "优惠券",
+            "支付",
+            "模块协同"
+          ],
+          "evaluation_focus": "验证仅含多模块协同描述的需求片段能否让模型精准选择 combinatorial，不被其他维度干扰",
+          "requirement_doc": "下单流程需商品、库存、优惠券、支付四模块协同。用户选择商品后应用优惠券计算折后价，再锁定库存，最后调用支付。任一模块返回失败均终止流程并释放已锁定资源。多件不同商品可分别使用不同优惠券，各商品库存独立管理。",
+          "description": "Row #6",
+          "vars": {
+            "kb_name": "eval_kb"
+          },
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 5,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "8823",
+              "content-type": "application/json",
+              "date": "Tue, 30 Jun 2026 10:41:32 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 1
+      }
+    ],
+    "stats": {
+      "successes": 0,
+      "failures": 6,
+      "errors": 0,
+      "tokenUsage": {
+        "prompt": 0,
+        "completion": 0,
+        "cached": 0,
+        "total": 0,
+        "numRequests": 6,
+        "completionDetails": {
+          "reasoning": 0,
+          "acceptedPrediction": 0,
+          "rejectedPrediction": 0,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0
+        },
+        "assertions": {
+          "total": 0,
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "numRequests": 0,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          }
+        }
+      },
+      "durationMs": 34,
+      "evaluationDurationMs": 34
+    }
+  },
+  "config": {
+    "tags": {},
+    "description": "TestCaseDesignAgent - Phase 0 Skill Selection",
+    "prompts": [
+      "{{question}}"
+    ],
+    "providers": [
+      {
+        "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+        "label": "testcase_design_agent",
+        "config": {
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Project-Id": "eval-project"
+          },
+          "body": {
+            "question": "{{question}}",
+            "app": "testcase_design",
+            "requirement_doc": "{{requirement_doc}}"
+          },
+          "transformResponse": "json.selected_skills"
+        }
+      }
+    ],
+    "tests": [
+      {
+        "path": "../AiLearning/tests/testcase_design_eval_set.json"
+      }
+    ],
+    "env": {},
+    "defaultTest": {
+      "vars": {
+        "kb_name": "eval_kb"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "Array.isArray(output)"
+        },
+        {
+          "type": "javascript",
+          "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+        },
+        {
+          "type": "javascript",
+          "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+        },
+        {
+          "type": "javascript",
+          "value": "const expected = context.vars.expected_skills || [];\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+        }
+      ],
+      "options": {},
+      "metadata": {}
+    },
+    "outputPath": [
+      "./phase0_result.json"
+    ],
+    "extensions": [],
+    "metadata": {},
+    "evaluateOptions": {}
+  },
+  "shareableUrl": null,
+  "metadata": {
+    "promptfooVersion": "0.121.17",
+    "nodeVersion": "v24.18.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "exportedAt": "2026-07-01T10:36:52.805Z",
+    "evaluationCreatedAt": "2026-07-01T10:36:52.745Z"
+  },
+  "vars": [
+    "kb_name"
+  ],
+  "runtimeOptions": {
+    "eventSource": "cli",
+    "showProgressBar": true,
+    "repeat": 1,
+    "maxConcurrency": 4,
+    "cache": true
+  }
+}

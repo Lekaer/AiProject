@@ -1,0 +1,78 @@
+# Phase 0: Skill Selection 质量评估
+# 用法: cd promptfoo && promptfoo eval -c phase0_skill_selection.yaml
+#
+# 前置条件:
+#   1. uvicorn main:app --reload 已在 8000 端口启动
+#   2. 已创建 eval_kb 知识库: curl -X POST http://127.0.0.1:8000/api/kb -H "X-Project-Id: eval-project" -H "Content-Type: application/json" -d '{"name":"eval_kb"}'
+description: "TestCaseDesignAgent - Phase 0 Skill Selection"
+
+outputPath: ./phase0_result.json
+
+commandLineOptions:
+  verbose: true
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask"
+    label: testcase_design_agent
+    config:
+      method: "POST"
+      headers:
+        "Content-Type": "application/json"
+        "X-Project-Id": "eval-project"
+      body:
+        question: "{{question}}"
+        app: "testcase_design"
+        requirement_doc: "{{requirement_doc}}"
+      transformResponse: json.selected_skills
+
+tests:
+  - path: ../AiLearning/tests/testcase_design_eval_set.json
+
+defaultTest:
+  vars:
+    kb_name: "eval_kb"
+  assert:
+    # 规则1: output 必须是数组（selected_skills）
+    - type: javascript
+      value: Array.isArray(output)
+
+    # 规则2: 至少命中 expected_skills 中的一个（expected_skills 为空则 vacuously true）
+    - type: javascript
+      value: |
+        const raw = context.vars.expected_skills;
+        let expected = [];
+        if (Array.isArray(raw)) {
+          expected = raw;
+        } else if (typeof raw === 'string') {
+          try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }
+        }
+        if (expected.length === 0) return true;
+        return expected.some((s) => output.includes(s));
+
+    # 规则3: 文档内问题不能空数组；文档外问题必须空数组
+    - type: javascript
+      value: |
+        const raw = context.vars.expected_skills;
+        let expected = [];
+        if (Array.isArray(raw)) {
+          expected = raw;
+        } else if (typeof raw === 'string') {
+          try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }
+        }
+        if (expected.length === 0) return output.length === 0;
+        return output.length > 0;
+    # 规则4: 单维度场景下不能全选（expected_skills 只有1个时，结果不应超过3个）
+    - type: javascript
+      value: |
+        const raw = context.vars.expected_skills;
+        let expected = [];
+        if (Array.isArray(raw)) {
+          expected = raw;
+        } else if (typeof raw === 'string') {
+          try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }
+        }
+        if (expected.length === 1) return output.length <= 3;
+        return true;

@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RequirementModel",
+  "description": "结构化需求模型：PRD 解析产物。设计说明见 AiLearning/docs/requirement_model_design.md",
+  "type": "object",
+  "required": ["title", "summary", "flows", "open_questions"],
+  "properties": {
+    "title": { "type": "string" },
+    "summary": { "type": "string", "description": "需求一句话概述" },
+    "flows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "preconditions", "relations", "tasks"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^F[0-9]+$" },
+          "name": { "type": "string", "pattern": ".*\\S.*"},
+          "description": { "type": "string" },
+          "preconditions": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "入口/资格校验（能不能进这个流程）"
+          },
+          "relations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "target"],
+              "properties": {
+                "type": { "enum": ["mutex", "depends_on", "sequence"] },
+                "target": { "type": "string", "pattern": "^F[0-9]+$" }
+              }
+            }
+          },
+          "assumed": { "type": "boolean", "default": false },
+          "change": {
+            "type": "string",
+            "enum": ["new", "modified", "unchanged_affected"],
+            "default": "new",
+            "description": "变更标记：本流程/任务是本次新增、修改、还是未改但受牵连（优化类需求必填）"
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "type", "description", "relations", "produces", "rules"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^F[0-9]+\\.T[0-9]+$" },
+                "name": { "type": "string", "pattern": ".*\\S.*"},
+                "type": {
+                  "type": "string",
+                  "description": "任务类型：录入/审批/同步/计算/通知/其他；维度选择的证据之一"
+                },
+                "description": { "type": "string" },
+                "scenarios": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "不同的任务提交场景"
+                },
+                "relations": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["type", "target"],
+                    "properties": {
+                      "type": { "enum": ["depends_on", "sequence", "mutex"] },
+                      "target": { "type": "string", "pattern": "^F[0-9]+\\.T[0-9]+$" }
+                    }
+                  }
+                },
+                "data_dependencies": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "读写的数据/表/外部接口"
+                },
+                "produces": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "后置状态/产出，场景串联的粘合剂"
+                },
+                "assumed": { "type": "boolean", "default": false },
+                "change": {
+                  "type": "string",
+                  "enum": ["new", "modified", "unchanged_affected"],
+                  "default": "new",
+                  "description": "变更标记：本任务是本次新增、修改、还是未改但受牵连"
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "condition", "expected"],
+                    "properties": {
+                      "id": { "type": "string", "pattern": "^F[0-9]+\\.T[0-9]+\\.R[0-9]+$" },
+                      "description": { "type": "string" },
+                      "condition": { "type": "string", "minLength": 1, "description": "什么情况下" },
+                      "expected": { "type": "string", "minLength": 1, "description": "应该发生什么" },
+                      "assumed": { "type": "boolean", "default": false },
+                      "change": {
+                        "type": "string",
+                        "enum": ["new", "modified", "unchanged_affected"],
+                        "default": "new",
+                        "description": "变更标记：本条规则是本次新增、修改、还是未改但受牵连"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "关键且不可推断的缺失信息，随结果附带给用户"
+    }
+  }
+}

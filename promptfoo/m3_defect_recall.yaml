@@ -1,0 +1,63 @@
+# M3 债 1：缺陷库检索金标准评测（纯检索，零 LLM 成本）
+# 金标准"任务查询 → 理应命中的缺陷"，断言 top-3 命中。
+# 运行：promptfoo eval -c promptfoo/m3_defect_recall.yaml --no-cache
+
+description: M3 缺陷库检索金标准（hit rate 常驻化）
+
+providers:
+  - id: file://defect_recall_provider.py
+    config:
+      pythonExecutable: /Users/kaka/PycharmProjects/AiProject/.venv/bin/python
+
+prompts:
+  - "{{query}}"
+
+tests:
+  - description: 增店任务 → 数量上限缺陷
+    vars:
+      query: 增店申请 提交增店申请 录入 门店表 申请表
+    assert:
+      - type: javascript
+        value: file://assertions/recall.js:assertDef003
+
+  - description: 增店任务 → 重复提交缺陷
+    vars:
+      query: 增店申请 提交增店申请 录入 门店表 申请表
+    assert:
+      - type: javascript
+        value: file://assertions/recall.js:assertDef007
+
+  - description: 签约任务 → 合同生成失败缺陷
+    vars:
+      query: 商户入驻 签约 生成合同 协议平台
+    assert:
+      - type: javascript
+        value: file://assertions/recall.js:assertDef001
+
+  - description: 退出审批任务 → 状态未流转缺陷
+    vars:
+      query: 商户退出 退出审批 审批 流程状态
+    assert:
+      - type: javascript
+        value: file://assertions/recall.js:assertDef004
+
+  - description: 资金结算查询 → 越权查看缺陷
+    vars:
+      query: 资金结算 结算明细查询 录入 商户资金
+    assert:
+      - type: javascript
+        value: file://assertions/recall.js:assertDef005
+
+  - description: 费用清算任务 → 精度误差缺陷
+    vars:
+      query: 费用清算 月度清算 计算 渠道对账
+    assert:
+      - type: javascript
+        value: file://assertions/recall.js:assertDef006
+
+  - description: 续签任务 → 流程互斥缺陷
+    vars:
+      query: 换续改 续签申请 录入 商户主体信息
+    assert:
+      - type: javascript
+        value: file://assertions/recall.js:assertDef008

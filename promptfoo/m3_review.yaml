@@ -1,0 +1,35 @@
+# M3 债 1：对抗审查评测
+# 输入固定（flow + 用例集直传），断言审查能发现已知缺口并落盘。
+# 运行：promptfoo eval -c promptfoo/m3_review.yaml --no-cache
+
+description: M3 对抗审查评测（固定输入找已知缺口）
+
+providers:
+  - id: file://review_provider.py
+    config:
+      pythonExecutable: /Users/kaka/PycharmProjects/AiProject/.venv/bin/python
+
+prompts:
+  - "run"
+
+tests:
+  - description: 覆盖不全的用例集（缺前置条件负向、缺权限）→ 至少发现 2 个缺口
+    vars:
+      min_gaps: 2
+      flow_json: |
+        {"id": "F1", "name": "增店申请", "description": "商户新增门店",
+         "preconditions": ["商户状态为合作中"], "relations": [],
+         "tasks": [{"id": "F1.T1", "name": "提交增店申请", "type": "录入",
+          "description": "商户填写门店信息并提交增店申请，支持单店新增和批量新增",
+          "scenarios": ["单店新增", "批量新增"], "relations": [],
+          "data_dependencies": ["门店表", "申请表"], "produces": ["待审核的增店申请单"],
+          "rules": [
+            {"id": "F1.T1.R1", "condition": "同一商户下门店名称重复", "expected": "拒绝并提示已存在门店"},
+            {"id": "F1.T1.R2", "condition": "单批新增数量超过上限", "expected": "拒绝并提示上限"}]}]}
+      cases_json: |
+        [{"title": "批量新增数量恰好等于上限，提交成功", "expected": "提交成功"},
+         {"title": "批量新增数量超过上限，拒绝", "expected": "拒绝并提示上限"},
+         {"title": "门店名称与已有重复，拒绝", "expected": "拒绝并提示已存在门店"}]
+    assert:
+      - type: javascript
+        value: file://assertions/review.js:assertFindsGaps

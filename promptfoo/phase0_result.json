@@ -1,0 +1,1381 @@
+{
+  "evalId": "eval-Aof-2026-07-01T12:18:47",
+  "results": {
+    "version": 3,
+    "timestamp": "2026-07-01T12:18:47.621Z",
+    "prompts": [
+      {
+        "id": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "raw": "{{question}}",
+        "label": "{{question}}",
+        "provider": "testcase_design_agent",
+        "metrics": {
+          "score": 6,
+          "testPassCount": 6,
+          "testFailCount": 0,
+          "testErrorCount": 0,
+          "assertPassCount": 24,
+          "assertFailCount": 0,
+          "totalLatencyMs": 2772789,
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 6,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          },
+          "namedScores": {},
+          "namedScoresCount": {},
+          "namedScoreWeights": {},
+          "cost": 0
+        }
+      }
+    ],
+    "results": [
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "85420b6c-4b77-48e7-a30a-02049fb0e2e9",
+        "latencyMs": 769104,
+        "namedScores": {},
+        "prompt": {
+          "raw": "某优惠券系统支持折扣率0%-100%、满减门槛1-50000元、每人限领1-10张、券有效期1-365天，请从边界值角度设计测试用例",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"折扣率最小边界0%验证\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"1. 系统中存在商品A，售价100.00元，成本价50.00元；2. 当前用户账户状态正常，未持有该优惠券；3. 优惠券系统中可创建折扣券，折扣率支持0%-100%。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 创建一个折扣优惠券，设置折扣率为0.00%，其他属性有效\\\",\\n      \\\"2. 用户领取该优惠券\\\",\\n      \\\"3. 用户购买商品A，订单金额100.00元，应用该0%折扣券\\\",\\n      \\\"4. 查看订单计算结果\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 优惠券创建成功；2. 订单金额无折扣，最终应付金额仍为100.00元；3. 商品单价未发生变化，结果向下取整到分后为100.00元。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"折扣率最大边界100%且成本价为正值时生效\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"1. 系统中存在商品B，售价80.00元，成本价20.00元；2. 当前用户账户正常；3. 系统配置折扣后单价不得低于成本价。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 创建一个折扣优惠券，折扣率设为100.00%\\\",\\n      \\\"2. 用户领取该优惠券\\\",\\n      \\\"3. 用户购买商品B，数量1，订单原始金额80.00元，应用100%折扣券\\\",\\n      \\\"4. 查看订单商品实际成交单价及最终金额\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 优惠券创建成功；2. 订单中商品单价不能为0，最终成交单价应为成本价20.00元（向下取整到分）；3. 订单总金额为20.00元，系统正确执行成本价保护。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"折扣率低于下限-0.01%应被拒绝\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"优惠券创建界面或接口可用，当前系统未限制已登录管理员操作。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 调用创建折扣券接口/页面，填写折扣率为-0.01%\\\",\\n      \\\"2. 提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝该输入，提示‘折扣率不在有效范围（0%-100%）’或类似错误信息，优惠券未被创建。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"折扣率高于上限100.01%应被拒绝\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"同TC-003。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 调用创建折扣券接口/页面，填写折扣率为100.01%\\\",\\n      \\\"2. 提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝该输入，提示超出范围，优惠券创建失败。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"折扣率0.00%作为有效边界等价类\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"系统中存在商品C售价50.00元，成本价10.00元。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 创建折扣券，折扣率设为0.00%\\\",\\n      \\\"2. 用户领券后购买商品C，订单金额50.00元，使用该券\\\",\\n      \\\"3. 检查订单金额\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单金额不变，为50.00元，系统正常处理，无任何错误提示。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"折扣率负值-0.01%应被拒绝\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"同TC-003。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 输入折扣率-0.01%\\\",\\n      \\\"2. 尝试保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝输入或返回错误，优惠券未被创建。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"折扣率精度2位小数99.99%功能正常\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"商品D售价100.00元，成本价30.00元。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 创建折扣券，折扣率填写99.99%\\\",\\n      \\\"2. 用户领取并使用该券购买商品D，数量1\\\",\\n      \\\"3. 查看订单金额计算过程\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 折扣券创建成功；2. 订单金额计算：100.00 * (1 - 0.9999) = 0.01元，因0.01 >= 成本价30.00？不，0.01低于成本价，系统应触发成本价保护，最终单价为30.00元（成本价），订单总金额30.00元；或如果成本价保护逻辑为商品单价，则单价30.00元。具体可描述为：最终单价不低于成本价30.00元，结果向下取整到分30.00元。系统稳定无崩溃。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"折扣率精度3位小数99.999%应被拒绝或截断\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"当前创建优惠券界面或接口支持输入小数。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 输入折扣率99.999%\\\",\\n      \\\"2. 尝试保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝该输入并提示‘最多支持两位小数’，或自动四舍五入为100.00%并给出提示，但最终保存值不能为99.999%。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"满减门槛最小边界1元正常生效\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"系统中存在订单金额为1.00元的商品组合。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 创建满减优惠券，设置门槛金额1.00元，减免金额0.50元\\\",\\n      \\\"2. 用户领取后，下单刚好1.00元的订单\\\",\\n      \\\"3. 应用该满减券，查看是否满足门槛并减免\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单金额1.00元达到门槛，优惠减免0.50元，实付0.50元。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"满减门槛最大边界50000元正常生效\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"存在一笔订单总额50000.00元的商品。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 创建满减券，门槛50000.00元，减1000元\\\",\\n      \\\"2. 用户下单50000.00元并使用该券\\\",\\n      \\\"3. 检查是否满足门槛并扣减\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单满足门槛，实际支付49000.00元，优惠券正常使用。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-011\\\",\\n    \\\"title\\\": \\\"满减门槛低于下限0.99元应被拒绝\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"管理员在后台配置满减券。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 输入门槛金额0.99元\\\",\\n      \\\"2. 提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝，提示‘满减门槛最低为1.00元’或类似信息，优惠券未被创建。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-012\\\",\\n    \\\"title\\\": \\\"满减门槛高于上限50000.01元应被拒绝\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"同TC-011。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 输入门槛金额50000.01元\\\",\\n      \\\"2. 提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝，提示‘满减门槛最高为50000.00元’，创建失败。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-013\\\",\\n    \\\"title\\\": \\\"满减门槛零值0元应被拒绝\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"同TC-011。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 输入门槛金额0.00元\\\",\\n      \\\"2. 提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝，提示‘满减门槛不能为0’或‘最低1元’，优惠券创建失败。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-014\\\",\\n    \\\"title\\\": \\\"满减门槛负值-1元应被拒绝\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"同TC-011。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 输入门槛金额-1.00元\\\",\\n      \\\"2. 提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝，提示非法输入，优惠券创建失败。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-015\\\",\\n    \\\"title\\\": \\\"限领数量最小边界1张\\\",\\n    \\\"type\\\": \\\"边界值\\\",\\n    \\\"precondition\\\": \\\"1. 创建一个优惠券，每人限领数量设为1；2. 用户账户状态正常，未领过该券。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 用户领取该优惠券1次\\\",\\n      \\\"2. 用户尝试再次领取同一优惠券\\\",\\n      \\\"3. 检查领取结果\\\"\\n    ],\\n    \\\"expected\\\": \\\"第一次领取成功，第二次领取时系统提示‘已达领取上限’或‘不能重复领取’，用户最终仅持有1张该券。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-016\\\",\\n    \\\"title\\\": \\\"验证每人限领优惠券最大数量10张\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"活动已创建，每人限领数量设置为10张；用户账户正常且未领取过该活动优惠券。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户连续执行领取操作10次，每次领取一张优惠券\\\",\\n      \\\"记录每次领取结果与优惠券数量\\\",\\n      \\\"用户尝试领取第11张优惠券\\\"\\n    ],\\n    \\\"expected\\\": \\\"前10次领取均成功，优惠券到账（总数10张）；第11次领取失败，系统提示“已达本活动限领数量”或返回错误码LIMIT_REACHED。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-017\\\",\\n    \\\"title\\\": \\\"验证每人限领数量设置为0张时活动无效\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"运营人员尝试创建活动或修改限领数量，将每人限领数量设置为0。\\\",\\n    \\\"steps\\\": [\\n      \\\"在活动配置页面将限领数量输入0\\\",\\n      \\\"提交保存\\\",\\n      \\\"检查活动状态及用户端是否可领取\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝保存，提示“每人限领数量最低为1张”或错误码INVALID_LIMIT；若活动已被设为此值，则活动处于无效状态，用户看不到领券入口。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-018\\\",\\n    \\\"title\\\": \\\"验证每人限领数量超出上限11张时被拒绝\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"活动创建或编辑界面，限领数量最大允许10张。\\\",\\n    \\\"steps\\\": [\\n      \\\"将每人限领数量设置为11\\\",\\n      \\\"提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝保存，提示“每人限领数量不能超过10张”或错误码LIMIT_EXCEEDED。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-019\\\",\\n    \\\"title\\\": \\\"验证每人限领数量设置为负值-1时被拒绝\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"活动配置界面可输入限领数量。\\\",\\n    \\\"steps\\\": [\\n      \\\"将每人限领数量设置为-1\\\",\\n      \\\"提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝保存，提示“请输入1-10之间的整数”或错误码INVALID_PARAM。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-020\\\",\\n    \\\"title\\\": \\\"验证优惠券有效期最短1天（当日领取次日失效）\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"活动创建有效期设置为1天；当前时间为2025-04-10 10:00:00。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户在2025-04-10 10:00:00领取该优惠券\\\",\\n      \\\"检查优惠券有效期结束时间\\\",\\n      \\\"用户在2025-04-11 10:00:01（次日超1秒）尝试使用优惠券\\\"\\n    ],\\n    \\\"expected\\\": \\\"优惠券有效期为领取后1天，即有效至2025-04-11 10:00:00；在有效期结束后使用失败，提示“优惠券已过期”或错误码COUPON_EXPIRED。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-021\\\",\\n    \\\"title\\\": \\\"验证优惠券有效期最长365天跨年计算\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"活动创建有效期设置为365天；当前时间为2025-01-15 12:00:00。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户在2025-01-15 12:00:00领取优惠券\\\",\\n      \\\"查看优惠券有效期结束时间\\\",\\n      \\\"在2026-01-14 12:00:00（第365天）使用优惠券\\\",\\n      \\\"在2026-01-15 12:00:01（超过365天）尝试使用\\\"\\n    ],\\n    \\\"expected\\\": \\\"有效期正确地计算为2026-01-14 12:00:00；在有效期最后时刻使用成功；超出后使用失败并提示已过期。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-022\\\",\\n    \\\"title\\\": \\\"验证有效期设置为0天被拒绝\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"活动配置页面，有效期输入框。\\\",\\n    \\\"steps\\\": [\\n      \\\"将有效期设置为0天\\\",\\n      \\\"提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝保存，提示“有效期最少为1天”或错误码INVALID_VALIDITY。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-023\\\",\\n    \\\"title\\\": \\\"验证有效期设置为366天超出上限被拒绝\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"活动配置页面，有效期最大值为365天。\\\",\\n    \\\"steps\\\": [\\n      \\\"将有效期设置为366天\\\",\\n      \\\"提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝保存，提示“有效期最长365天”或错误码VALIDITY_EXCEEDED。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-024\\\",\\n    \\\"title\\\": \\\"验证有效期设置为-1天被拒绝\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"活动配置页面可输入有效天数。\\\",\\n    \\\"steps\\\": [\\n      \\\"将有效期设置为-1\\\",\\n      \\\"提交保存\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝保存，提示“请输入1-365天之间的整数”或错误码INVALID_PARAM。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-025\\\",\\n    \\\"title\\\": \\\"折扣后单价等于商品成本价，允许使用\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"商品A售价10.00元，成本价8.00元；优惠券折扣率20%；订单包含1件商品A。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户使用该优惠券下单购买1件商品A\\\",\\n      \\\"观察订单金额计算详情\\\"\\n    ],\\n    \\\"expected\\\": \\\"折扣后单价=10.00*(1-20%)=8.00元，恰好等于成本价8.00元，系统允许使用，最终应付金额8.00元（不含满减）。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-026\\\",\\n    \\\"title\\\": \\\"折扣后单价低于成本价时系统自动校正至成本价\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"商品B售价10.00元，成本价9.00元；优惠券折扣率20%。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户使用该优惠券购买1件商品B\\\",\\n      \\\"查看订单计算的折扣后单价和最终应付金额\\\"\\n    ],\\n    \\\"expected\\\": \\\"原折扣后单价应为8.00元，但低于成本价9.00元，系统自动将折扣后单价校正为9.00元，最终应付金额9.00元；或者提示“该券不可用于此商品”以防止亏本。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-027\\\",\\n    \\\"title\\\": \\\"折扣后金额10.005元向下取整为10.00元\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"商品C单价3.335元（为构造情况），购买3件总价10.005元；使用一张无门槛折扣券（例如100%折扣，但这里只测取整，可以设折扣后金额恰为10.005元）。实际：订单原价10.005元，适用某折扣后应付10.005元。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户提交订单，订单折扣后计算金额为10.005元\\\",\\n      \\\"查看订单应付金额显示及实际扣款\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统将金额向下取整到分，最终应付10.00元，实际扣款10.00元。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-028\\\",\\n    \\\"title\\\": \\\"折扣后金额恰好等于满减门槛1元时触发满减\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"满减活动规则：满1元减0.5元；商品D原价1.00元，无折扣或折扣后价格仍为1.00元。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户购买商品D，订单折扣后金额为1.00元\\\",\\n      \\\"检查是否满足满减条件并计算最终支付金额\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统判定满足满减门槛，最终支付金额=1.00-0.50=0.50元。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-029\\\",\\n    \\\"title\\\": \\\"折扣后金额0.99元低于满减门槛1元时不触发满减\\\",\\n    \\\"type\\\": \\\"边界值分析\\\",\\n    \\\"precondition\\\": \\\"满减规则：满1元减0.5元；商品E原价0.99元，折扣后金额仍为0.99元。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户购买商品E，订单折扣后金额为0.99元\\\",\\n      \\\"查看最终支付金额\\\"\\n    ],\\n    \\\"expected\\\": \\\"因未达到满减门槛，不触发满减，最终支付金额为0.99元。\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"boundary_value\"]}",
+          "latencyMs": 769104,
+          "cached": false,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "15619",
+                "content-type": "application/json",
+                "date": "Wed, 01 Jul 2026 12:29:05 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "boundary_value"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "kb_name": "eval_kb",
+            "question": "某优惠券系统支持折扣率0%-100%、满减门槛1-50000元、每人限领1-10张、券有效期1-365天，请从边界值角度设计测试用例",
+            "expected_skills": "[\"boundary_value\"]",
+            "expected_test_point_keywords": "[\"折扣率\",\"满减门槛\",\"限领数量\",\"有效期\",\"边界值\"]",
+            "evaluation_focus": "验证仅含数值边界的需求片段能否让模型精准选择 boundary_value，不被其他维度干扰",
+            "requirement_doc": "优惠券系统需求：折扣率范围0%至100%，支持2位小数精度。满减门槛金额最低1元、最高50000元。每人限领优惠券数量1-10张。优惠券有效期最短1天、最长365天。订单金额计算时折扣优先于满减，结果向下取整到分。折扣后单价不得低于商品成本价。"
+          },
+          "description": "Row #1",
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 0,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb",
+          "question": "某优惠券系统支持折扣率0%-100%、满减门槛1-50000元、每人限领1-10张、券有效期1-365天，请从边界值角度设计测试用例",
+          "expected_skills": "[\"boundary_value\"]",
+          "expected_test_point_keywords": "[\"折扣率\",\"满减门槛\",\"限领数量\",\"有效期\",\"边界值\"]",
+          "evaluation_focus": "验证仅含数值边界的需求片段能否让模型精准选择 boundary_value，不被其他维度干扰",
+          "requirement_doc": "优惠券系统需求：折扣率范围0%至100%，支持2位小数精度。满减门槛金额最低1元、最高50000元。每人限领优惠券数量1-10张。优惠券有效期最短1天、最长365天。订单金额计算时折扣优先于满减，结果向下取整到分。折扣后单价不得低于商品成本价。"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "15619",
+              "content-type": "application/json",
+              "date": "Wed, 01 Jul 2026 12:29:05 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "c837d412-29f1-4005-a118-be4edb02c96f",
+        "latencyMs": 773683,
+        "namedScores": {},
+        "prompt": {
+          "raw": "某支付系统依赖第三方支付网关和消息队列完成交易，请从异常路径角度设计测试用例",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"支付网关响应超时\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"系统支付网关超时配置为30秒；存在一个待支付订单；支付网关模拟器配置为接收请求后保持连接但持续超过30秒不返回响应。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 用户提交订单并触发支付流程。\\\",\\n      \\\"2. 订单系统向支付网关发送扣款请求。\\\",\\n      \\\"3. 模拟支付网关在30秒内无任何响应，直至系统达到超时阈值。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统在30秒后主动断开等待，返回支付超时错误给前端；订单状态更新为“支付失败”或“支付超时”；不向消息队列发送物流通知；日志正确记录完整的请求内容和超时响应（空或超时标记）；如系统存在重试策略，应记录重试尝试次数和最终失败信息。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"支付网关返回业务失败\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"存在一个可支付订单；支付网关模拟器配置为返回明确的业务失败状态码及描述（例如“余额不足”）。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 用户提交订单并触发支付。\\\",\\n      \\\"2. 订单系统向支付网关发送扣款请求。\\\",\\n      \\\"3. 支付网关同步返回“余额不足”的业务失败响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统立即将订单状态更新为“支付失败”，并向用户展示“余额不足”等失败提示；不生成物流通知消息，消息队列无任何发货相关投递；日志完整记录本次调用的请求和响应详情，包括失败码和失败原因。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"支付网关网络不可达\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"将支付网关服务地址配置为不可达的IP或关闭对应端口，使得TCP连接无法建立。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 用户提交订单触发支付。\\\",\\n      \\\"2. 系统尝试连接支付网关IP:Port。\\\",\\n      \\\"3. 由于网络不可达，TCP连接超时或直接被拒绝。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统捕获连接异常（如ConnectException），订单状态更新为“支付失败”；不发送物流通知；日志记录连接失败的具体原因（如目标不可达），包含请求的时间戳和URL信息，供排查使用；前端收到明确的网络异常或支付失败提示。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"支付网关返回格式异常\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"支付网关模拟器返回HTTP 200，但响应体为非法JSON字符串或HTML错误页面。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 提交订单发起支付。\\\",\\n      \\\"2. 支付网关返回非约定格式响应（如HTML错误页或无法解析的字符串）。\\\",\\n      \\\"3. 系统尝试解析支付结果。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统解析响应失败，捕获数据格式异常；订单状态标记为“支付失败”或“异常”，不对用户显示原始错误信息；不发送物流通知；日志完整记录原始响应体和解析失败的异常堆栈，以便问题回溯；系统返回通用支付错误给调用方。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"消息队列首次投递失败\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"支付扣款成功，准备发送物流消息；消息队列代理模拟首次投递直接返回失败（如Broker不可用）。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 模拟一笔成功的支付，系统生成物流通知消息。\\\",\\n      \\\"2. 系统第一次向消息队列发送消息，Broker拒绝或未确认。\\\",\\n      \\\"3. 等待系统内建的重试机制触发。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统立即按照重试策略进行第2次发送尝试；每次投递尝试均记录详细日志，包括失败原因和时间；在重试次数内（如最多3次）如果恢复，消息最终投递成功，订单保持“支付成功”且物流得以通知；如果后续重试成功，整体交付不受影响。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"消息队列重试耗尽\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"支付已成功；消息队列代理持续不可用，所有投递尝试均失败。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 支付成功后，系统向消息队列发送物流消息。\\\",\\n      \\\"2. 第一次投递失败，触发重试。\\\",\\n      \\\"3. 第二次重试依旧失败。\\\",\\n      \\\"4. 第三次重试（达到最大重试次数3次）仍失败。\\\"\\n    ],\\n    \\\"expected\\\": \\\"3次重试全部失败后，消息不再进行重试，系统将该消息路由到死信队列或持久化到失败记录表；订单状态可能变为“待发货异常”或保持“支付成功”但标记为需人工介入；日志准确记录每一次重试及最终失败的完整信息；系统触发告警通知运维人员进行处理。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"支付成功但队列发送异常\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"支付网关扣款成功的响应正常返回；在发送物流消息前，切断消息队列连接（如断开网络或关闭Broker），使得发送时连接不可用。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 用户订单支付，系统成功调用支付网关并得到成功响应。\\\",\\n      \\\"2. 在准备发送物流通知消息时，消息队列不可达。\\\",\\n      \\\"3. 系统执行消息发送操作。\\\"\\n    ],\\n    \\\"expected\\\": \\\"支付主流程不受影响，立即向用户返回“支付成功”；消息发送失败时，系统将消息暂存或标记为重试，确保数据不丢失（例如写入本地数据库待后续补偿投递）；日志记录发送失败的连接异常；在消息队列恢复后，系统能通过补偿机制成功将物流消息投递出去。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"同一订单并发支付请求\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"存在一个待支付订单；准备两个并发的支付请求，携带相同的订单号和金额。支付网关支持幂等，相同订单号多次请求只执行一次扣款。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 在极短时间内，同时发起两个对同一订单的支付请求（例如用户双重点击、重入）。\\\",\\n      \\\"2. 请求A和请求B几乎同时到达支付网关。\\\",\\n      \\\"3. 支付网关对第一次请求扣款成功，第二次幂等返回成功或拒绝。\\\"\\n    ],\\n    \\\"expected\\\": \\\"支付网关实际只发生一次扣款；订单系统识别出重复支付，只处理一次成功的支付结果；仅发送一条物流发货消息，避免重复发货；日志中应记录重复请求被检测到的信息（如订单状态已为已支付，忽略后续）；订单最终状态为“支付成功”且金额正确。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"支付超时期间用户重复提交\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"配置支付网关在接收到请求后不立即响应，模拟网络延迟导致首请求在30秒超时窗口内未返回；用户在未收到结果前再次发起同一订单支付。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 用户首次提交支付，系统调用支付网关并挂起等待。\\\",\\n      \\\"2. 在首请求依然等待（未超时）的情况下，用户刷新页面或再次提交支付请求。\\\",\\n      \\\"3. 第二个支付请求到达系统。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统识别到该订单已有进行中的支付流程，拒绝第二个请求或提示“处理中”，防止重复调用支付网关；首请求最终超时后，订单状态更新为支付超时/失败，系统记录超时日志；若后续通过查询或回调得知支付实际成功，订单能恢复为成功并正确触发发货；最终数据保持一致。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"日志存储磁盘满\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"将日志文件所在磁盘分区填满至无剩余空间，使日志写入操作失败。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 提交一份正常订单并触发支付流程。\\\",\\n      \\\"2. 支付网关正常返回扣款成功或失败。\\\",\\n      \\\"3. 系统在记录调用日志时，因磁盘满抛出IO异常。\\\"\\n    ],\\n    \\\"expected\\\": \\\"支付核心流程正常执行，订单状态正确更新（根据支付结果）；向用户返回支付成功或失败的响应不因日志异常而中断；系统控制台或其他后备错误输出可以记录到“日志写入失败”的错误信息；不会导致服务崩溃或支付失败；整体业务流程不受日志异常影响。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-011\\\",\\n    \\\"title\\\": \\\"支付网关超时后实际扣款\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"模拟支付请求因网络延迟在30秒时超时，但支付网关实际已处理扣款并扣款成功。系统具备主动查询支付结果或接收异步回调的能力。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 订单支付请求发送给支付网关，网关扣款成功但响应在网络中严重延迟。\\\",\\n      \\\"2. 系统在30秒时未收到响应，标记订单为“支付失败”并返回超时给用户。\\\",\\n      \\\"3. 随后系统通过定时查询任务或网关异步回调，接收到该订单的真实成功状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统根据后续的真实成功通知，将订单状态补偿更新为“支付成功”；自动触发物流消息的发送，确保最终发货；日志中记录超时记录以及后续补偿成功的完整轨迹；订单与资金流最终一致，无发货遗漏。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-012\\\",\\n    \\\"title\\\": \\\"消息队列投递长时间延迟\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"支付成功，物流消息已成功发送到Broker但消费者由于积压等问题未及时处理，设置延迟时间达到2小时。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 支付成功，订单系统将物流消息发送至队列。\\\",\\n      \\\"2. 消息一直留在队列中，消费者在2小时后才会拉取到该消息。\\\",\\n      \\\"3. 消费者最终处理消息并触发发货。\\\"\\n    ],\\n    \\\"expected\\\": \\\"在延迟期间，订单状态保持为“支付成功待发货”或其他合理状态，不会出现错误标记或异常告警；最终消费者处理消息后，正常完成发货流程并更新状态；日志分别记录消息生产时间和消费时间，用于滞后分析；业务无实质性数据错误。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-013\\\",\\n    \\\"title\\\": \\\"订单参数传入特殊字符\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"构造包含特殊字符的订单：金额字段填入非数字值（如`100; DROP TABLE orders;`），描述字段包含`<script>alert(1)</script>`等。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 提交包含特殊字符的订单信息。\\\",\\n      \\\"2. 系统处理订单并组装支付请求参数。\\\",\\n      \\\"3. 调用支付网关发起扣款。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统对参数进行安全转义或校验，金额等数值字段非法则提示失败，不传递给网关；字符型字段（如描述）作为纯粹字符串传递，无SQL注入或XSS攻击发生；支付网关收到的请求参数安全合规，无异常执行；日志记录原始输入（需注意日志注入）的同时不破坏日志格式；前端不泄露敏感报错信息。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-014\\\",\\n    \\\"title\\\": \\\"物流通知消息体异常\\\",\\n    \\\"type\\\": \\\"exception_path\\\",\\n    \\\"precondition\\\": \\\"物流消息消费者正常运行，向其监听的队列直接发送格式异常的消息：超长字段（如订单号长度超过正常限制）、缺少必填字段（如地址为null）、数据类型错误（如金额为字符串而非数值）。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 手工向消息队列发送一条超长字段的物流通知消息。\\\",\\n      \\\"2. 手工发送一条缺少必填字段（orderId为null）的消息。\\\",\\n      \\\"3. 手工发送一条金额字段为字符串类型的消息。\\\",\\n      \\\"4. 消费者依次处理这些消息。\\\"\\n    ],\\n    \\\"expected\\\": \\\"消费者对每条异常消息均能捕获解析异常，不产生崩溃或线程阻塞；异常消息记录错误日志后，可根据配置被丢弃或转入死信队列；后续正常的物流消息仍能被正确消费和处理，发货流程不受影响；必要时产生告警通知。\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"exception_path\"]}",
+          "latencyMs": 773683,
+          "cached": false,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "12770",
+                "content-type": "application/json",
+                "date": "Wed, 01 Jul 2026 12:29:02 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "exception_path"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "kb_name": "eval_kb",
+            "question": "某支付系统依赖第三方支付网关和消息队列完成交易，请从异常路径角度设计测试用例",
+            "expected_skills": "[\"exception_path\"]",
+            "expected_test_point_keywords": "[\"支付网关\",\"超时\",\"消息队列\",\"重试\",\"异常\"]",
+            "evaluation_focus": "验证仅含外部依赖异常描述的需求片段能否让模型精准选择 exception_path，不被其他维度干扰",
+            "requirement_doc": "订单支付流程：用户提交订单后调用第三方支付网关扣款，扣款成功后通过消息队列通知物流系统发货。支付网关调用超时时间为30秒，消息队列支持最多3次重试投递。系统需记录每次调用的请求和响应日志用于问题排查。"
+          },
+          "description": "Row #2",
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 1,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb",
+          "question": "某支付系统依赖第三方支付网关和消息队列完成交易，请从异常路径角度设计测试用例",
+          "expected_skills": "[\"exception_path\"]",
+          "expected_test_point_keywords": "[\"支付网关\",\"超时\",\"消息队列\",\"重试\",\"异常\"]",
+          "evaluation_focus": "验证仅含外部依赖异常描述的需求片段能否让模型精准选择 exception_path，不被其他维度干扰",
+          "requirement_doc": "订单支付流程：用户提交订单后调用第三方支付网关扣款，扣款成功后通过消息队列通知物流系统发货。支付网关调用超时时间为30秒，消息队列支持最多3次重试投递。系统需记录每次调用的请求和响应日志用于问题排查。"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "12770",
+              "content-type": "application/json",
+              "date": "Wed, 01 Jul 2026 12:29:02 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "dc99b8f4-8231-4746-b8b8-242f2711efba",
+        "latencyMs": 117165,
+        "namedScores": {},
+        "prompt": {
+          "raw": "某后台管理系统分为普通用户、部门主管、系统管理员三级角色，请从权限安全角度设计测试用例",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"未认证访问用户列表\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"系统正常运行，用户列表接口 GET /api/users 未被额外 ACL 限制。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 构造 HTTP GET 请求到 /api/users，请求头中不包含 Authorization 字段。\\\",\\n      \\\"2. 发送请求并记录响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"HTTP 状态码 401 Unauthorized，响应体提示“未认证”或“令牌缺失”，不返回用户数据。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"无效token访问用户列表\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"系统正常运行，用户列表接口存在。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 构造 GET /api/users 请求，设置 Authorization: Bearer invalid_token（格式错误字符串）。\\\",\\n      \\\"2. 构造 GET /api/users 请求，设置 Authorization: Bearer （空字符串）。\\\",\\n      \\\"3. 分别发送并记录响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"两种请求均返回 HTTP 401 Unauthorized，响应体提示“无效令牌”或“认证失败”。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"未认证修改用户信息\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"系统中存在用户 ID 为 1001 的帐号，修改用户信息接口为 PUT /api/users/{id}。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 构造 HTTP PUT 请求到 /api/users/1001，请求头不包含 Authorization 字段，请求体包含符合格式的修改字段（如姓名）。\\\",\\n      \\\"2. 发送请求并记录响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"HTTP 状态码 401 Unauthorized，提示未认证，用户信息未被修改。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"普通用户越权访问用户列表\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"系统存在一个普通用户 user_normal，已获取其有效的 JWT token。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 使用 user_normal 的 token，设置 Authorization: Bearer <token>，发送 GET /api/users 请求。\\\",\\n      \\\"2. 接收响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"HTTP 状态码 403 Forbidden（或返回空列表，但不得包含任何用户信息），响应体提示“无权限访问”。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"普通用户修改他人信息\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"系统存在两个普通用户 user_a（ID 1001）和 user_b（ID 1002），已获取 user_a 的 JWT token。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 使用 user_a 的 token，构造 PUT /api/users/1002 请求，请求体修改手机号为 13800000000。\\\",\\n      \\\"2. 发送请求并记录响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"HTTP 状态码 403 Forbidden，响应体提示“无权修改其他用户信息”，user_b 信息未变化。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"主管越权修改他部门成员\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"部门主管 manager_d1 属于部门 D1，仅拥有本部门权限；用户 user_d2 属于部门 D2。已获取 manager_d1 的有效 token。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 使用 manager_d1 的 token，发送 PUT /api/users/<user_d2_id> 请求，尝试修改部分字段。\\\",\\n      \\\"2. 检查响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"HTTP 状态码 403 Forbidden，提示“无权修改其他部门成员”，user_d2 信息未被修改。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"过期token返回401\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"系统已签发一个有效期为 1 秒的 JWT token（或等待某 token 过期），当前时间已超过 token 的 exp 时间。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 使用已过期的 token，设置 Authorization: Bearer <expired_token>，发送 GET /api/users 请求。\\\",\\n      \\\"2. 接收响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"HTTP 状态码 401 Unauthorized，响应体明确提示“令牌已过期”。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"篡改token访问接口\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"获取一个合法普通用户 token，已知其 payload 结构，拥有 JWT 篡改工具。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 将 token 的 payload 部分解码，将角色字段 role 修改为 admin，然后重新拼装为 new_token（签名保持原样，无效）。\\\",\\n      \\\"2. 使用篡改后的 new_token，Authorization: Bearer <new_token>，请求 GET /api/users。\\\",\\n      \\\"3. 记录响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"HTTP 状态码 401 Unauthorized，提示“令牌无效”或“签名验证失败”。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"跨用户token修改信息\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"用户 A（sub=1001）拥有有效 token，用户 B 的 ID 为 1002。修改用户信息接口为 PUT /api/users/{id}。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 使用用户 A 的 token，构造 PUT /api/users/1002 请求，修改用户 B 的信息。\\\",\\n      \\\"2. 发送请求并检查响应。\\\"\\n    ],\\n    \\\"expected\\\": \\\"HTTP 状态码 403 Forbidden，系统从 token 中识别身份为 A，拒绝修改用户 B，响应体提示“无权修改其他用户”。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"敏感字段API响应脱敏\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"系统存在主管或管理员用户，拥有查询用户详情的权限（如 GET /api/users/{id}）；用户信息中包含身份证号 110101199001011234、手机号 13812345678。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 使用管理员 token，请求 GET /api/users/1001，获取用户详情。\\\",\\n      \\\"2. 检查响应 JSON 中 idcard 和 phone 字段的值。\\\"\\n    ],\\n    \\\"expected\\\": \\\"接口返回的身份证号显示为 110101****1234 或类似脱敏格式，手机号显示为 138****5678，不能为明文。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-011\\\",\\n    \\\"title\\\": \\\"响应禁止包含密码\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"系统通过任意用户查询接口（如用户列表 /api/users 或用户详情 /api/users/{id}）返回数据。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 使用管理员 token 请求 GET /api/users 获取用户列表。\\\",\\n      \\\"2. 使用管理员 token 请求 GET /api/users/1001 获取用户详情。\\\",\\n      \\\"3. 仔细检查所有响应 JSON 中的字段名和值。\\\"\\n    ],\\n    \\\"expected\\\": \\\"所有接口响应中不得出现 password、passwd、secret、pwd 等字段，也不得包含加密后的密码散列值。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-012\\\",\\n    \\\"title\\\": \\\"日志敏感数据脱敏\\\",\\n    \\\"type\\\": \\\"权限安全\\\",\\n    \\\"precondition\\\": \\\"服务端应用日志级别设置为可记录请求/响应或业务操作，且测试人员可访问日志文件或控制台。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 使用管理员 token 发送 PUT /api/users/1001 请求，修改其身份证号为 110101199001011234，手机号为 13812345678。\\\",\\n      \\\"2. 发送 GET /api/users/1001 查询该用户详情。\\\",\\n      \\\"3. 检查服务端日志输出，搜索相关记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"日志中出现的身份证号、手机号已脱敏处理（如显示为 110101****1234、138****5678），无明文记录。\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"permission_security\"]}",
+          "latencyMs": 117165,
+          "cached": false,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "7440",
+                "content-type": "application/json",
+                "date": "Wed, 01 Jul 2026 12:18:47 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "permission_security"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "kb_name": "eval_kb",
+            "question": "某后台管理系统分为普通用户、部门主管、系统管理员三级角色，请从权限安全角度设计测试用例",
+            "expected_skills": "[\"permission_security\"]",
+            "expected_test_point_keywords": "[\"角色\",\"脱敏\",\"JWT\",\"越权\",\"401\"]",
+            "evaluation_focus": "验证仅含角色权限描述的需求片段能否让模型精准选择 permission_security，不被其他维度干扰",
+            "requirement_doc": "系统角色分为普通用户、部门主管、系统管理员三级。用户列表页仅主管和管理员可见。个人敏感字段（身份证号、手机号）前端展示时需脱敏。API接口需校验JWT token，过期返回401。用户仅可修改本人信息，主管可修改本部门成员信息，管理员可修改全部用户。"
+          },
+          "description": "Row #3",
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 2,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb",
+          "question": "某后台管理系统分为普通用户、部门主管、系统管理员三级角色，请从权限安全角度设计测试用例",
+          "expected_skills": "[\"permission_security\"]",
+          "expected_test_point_keywords": "[\"角色\",\"脱敏\",\"JWT\",\"越权\",\"401\"]",
+          "evaluation_focus": "验证仅含角色权限描述的需求片段能否让模型精准选择 permission_security，不被其他维度干扰",
+          "requirement_doc": "系统角色分为普通用户、部门主管、系统管理员三级。用户列表页仅主管和管理员可见。个人敏感字段（身份证号、手机号）前端展示时需脱敏。API接口需校验JWT token，过期返回401。用户仅可修改本人信息，主管可修改本部门成员信息，管理员可修改全部用户。"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "7440",
+              "content-type": "application/json",
+              "date": "Wed, 01 Jul 2026 12:18:47 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "4baaf6c0-1092-4345-8352-9c5a41e398e5",
+        "latencyMs": 586152,
+        "namedScores": {},
+        "prompt": {
+          "raw": "某请假系统中申请单存在草稿→待审批→已通过/已驳回的状态流转，请从状态机角度设计测试用例",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"草稿提交至待审批\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“草稿”的请假申请单，填写内容完整且符合提交规则；当前用户具有提交该申请单的权限。\\\",\\n    \\\"steps\\\": [\\n      \\\"进入该草稿申请单的详情页面，确认当前状态显示为“草稿”。\\\",\\n      \\\"点击“提交”按钮，并确认提交操作。\\\",\\n      \\\"查看申请单状态及操作日志。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态变更为“待审批”；操作日志中新增一条记录，操作人为当前用户，操作时间与提交时间一致，操作类型为“提交”；页面正确展示待审批状态及相关审批人信息。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"待审批通过至已通过\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“待审批”的请假申请单；当前用户为该申请单的审批人，且具有通过权限。\\\",\\n    \\\"steps\\\": [\\n      \\\"登录为审批人，进入申请单详情页面，确认状态显示为“待审批”。\\\",\\n      \\\"点击“通过”按钮，填写审批意见并确认。\\\",\\n      \\\"重新加载页面，查看状态和操作记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态变更为“已通过”；操作日志新增一条记录，操作人为当前审批人，操作时间与通过操作一致，操作类型为“通过”；审批意见被保存。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"待审批驳回至已驳回\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“待审批”的请假申请单；当前用户为该申请单的审批人，且具有驳回权限。\\\",\\n    \\\"steps\\\": [\\n      \\\"以审批人身份进入该申请单，确认状态为“待审批”。\\\",\\n      \\\"点击“驳回”按钮，输入驳回理由并确认。\\\",\\n      \\\"查看申请单状态和操作日志。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态变更为“已驳回”，且显示为终态，无任何可操作按钮（通过、驳回、提交等均不可用）；操作日志中新增操作人为审批人、操作时间为当前时间、操作类型为“驳回”的记录；驳回理由已保存。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"已通过撤销回待审批\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“已通过”的请假申请单；当前用户具有撤销该申请单的权限（如提交人本人或指定的管理者）。\\\",\\n    \\\"steps\\\": [\\n      \\\"进入该已通过申请单详情页，确认状态为“已通过”。\\\",\\n      \\\"点击“撤销”按钮，填写撤销原因并确认。\\\",\\n      \\\"查看申请单状态及操作日志。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态变更为“待审批”；操作日志新增操作人为当前用户、操作时间为撤销操作时间、操作类型为“撤销”的记录；撤销原因已保存；页面重新显示审批相关操作按钮。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"草稿直接通过非法\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“草稿”的请假申请单；当前用户可能为审批人或其他角色。\\\",\\n    \\\"steps\\\": [\\n      \\\"进入该草稿申请单详情页，确认状态为“草稿”。\\\",\\n      \\\"尝试通过接口或UI调用“通过”操作（若UI上无此按钮，则通过直接发送通过请求的方式模拟）。\\\",\\n      \\\"再次查看申请单状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝操作，返回明确的状态不合法或权限不足的错误提示；申请单状态保持为“草稿”；操作日志中无新增记录。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"草稿直接驳回非法\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“草稿”的请假申请单。\\\",\\n    \\\"steps\\\": [\\n      \\\"确认该申请单状态为“草稿”，UI上无驳回操作入口。\\\",\\n      \\\"通过直接调用驳回接口的方式执行操作。\\\",\\n      \\\"检查返回结果和申请单状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝，返回错误信息（如“当前状态不允许执行驳回操作”）；申请单状态保持“草稿”；操作日志无新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"待审批退回草稿非法\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“待审批”的请假申请单。\\\",\\n    \\\"steps\\\": [\\n      \\\"进入该申请单，确认状态为“待审批”。\\\",\\n      \\\"尝试调用“退回草稿”操作（如果没有该操作则伪造请求）。\\\",\\n      \\\"观察系统响应及状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝操作，返回错误提示表明不存在从待审批到草稿的合法流转；申请单状态仍为“待审批”；操作日志无新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"已驳回执行任何操作非法\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“已驳回”（终态）的请假申请单。\\\",\\n    \\\"steps\\\": [\\n      \\\"进入已驳回申请单详情页，确认状态为“已驳回”。\\\",\\n      \\\"尝试依次执行以下操作：通过、驳回、撤销、提交（直接调用接口）。\\\",\\n      \\\"每执行一个操作后检查状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"对于每个操作，系统均拒绝并返回错误提示（如“终态申请单不可操作”）；申请单状态始终保持“已驳回”；操作日志始终无新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"已通过直接驳回非法\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“已通过”的请假申请单。\\\",\\n    \\\"steps\\\": [\\n      \\\"进入已通过申请单详情页，确认状态为“已通过”。\\\",\\n      \\\"尝试调用“驳回”接口执行驳回操作。\\\",\\n      \\\"查看系统响应与状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝操作，返回“当前状态不允许驳回”等错误信息；申请单状态保持“已通过”；操作日志无新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"已通过直接回草稿非法\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“已通过”的请假申请单。\\\",\\n    \\\"steps\\\": [\\n      \\\"进入该申请单，状态为“已通过”。\\\",\\n      \\\"尝试调用将状态直接变更为“草稿”的接口（绕过撤销到待审批再回草稿的路径）。\\\",\\n      \\\"检查系统返回和实际状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝变更，返回错误提示；申请单状态保持“已通过”；操作日志无新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-011\\\",\\n    \\\"title\\\": \\\"待审批状态撤销非法\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“待审批”的请假申请单。\\\",\\n    \\\"steps\\\": [\\n      \\\"进入待审批申请单详情页，状态显示为“待审批”。\\\",\\n      \\\"尝试执行“撤销”操作（通过接口或UI若有误显示）。\\\",\\n      \\\"观察返回结果和状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝撤销操作，返回错误信息；申请单状态保持“待审批”；操作日志无新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-012\\\",\\n    \\\"title\\\": \\\"草稿重复提交幂等\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“草稿”的请假申请单，已完成一次提交操作变为“待审批”。在另一次请求中再次对该同一申请单提交。\\\",\\n    \\\"steps\\\": [\\n      \\\"首先正常提交草稿，确认状态已变为“待审批”。\\\",\\n      \\\"在不改变状态的前提下，用相同参数再次对同一申请单发起提交请求。\\\",\\n      \\\"检查响应和申请单状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"第二次提交请求被系统拒绝，返回错误提示（如“申请单已提交，请勿重复操作”）；申请单状态保持“待审批”；操作日志中仅存在第一次提交的记录，无重复操作记录。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-013\\\",\\n    \\\"title\\\": \\\"已通过重复通过幂等\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“已通过”的请假申请单。\\\",\\n    \\\"steps\\\": [\\n      \\\"确认申请单状态为“已通过”。\\\",\\n      \\\"对该申请单再次执行“通过”操作。\\\",\\n      \\\"查看返回和状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝重复通过操作，返回明确错误信息（例如“申请单已通过，不能重复通过”）；申请单状态保持“已通过”；操作日志无新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-014\\\",\\n    \\\"title\\\": \\\"已驳回重复驳回幂等\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“已驳回”的请假申请单。\\\",\\n    \\\"steps\\\": [\\n      \\\"确认申请单状态为“已驳回”，且为终态。\\\",\\n      \\\"再次执行“驳回”操作。\\\",\\n      \\\"检查返回结果和状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"系统拒绝操作，返回“已驳回状态不可操作”或类似信息；申请单状态保持“已驳回”；操作日志无新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-015\\\",\\n    \\\"title\\\": \\\"已通过重复撤销幂等\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条申请单，首先从已通过执行撤销变为待审批，随后再次尝试对该申请单执行撤销。\\\",\\n    \\\"steps\\\": [\\n      \\\"对一条已通过申请单执行撤销，确认状态回到“待审批”。\\\",\\n      \\\"在待审批状态下，再次对该申请单执行撤销操作。\\\",\\n      \\\"观察系统响应和状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"第二次撤销操作被拒绝，系统返回错误（如“当前状态不允许撤销”）；申请单状态保持“待审批”；操作日志仅保存第一次撤销的记录。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"并发通过与驳回-状态一致性验证\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“待审批”的请假申请单，且有两个不同的审批人账号（审批人A、审批人B）均具有审批权限。\\\",\\n    \\\"steps\\\": [\\n      \\\"审批人A登录系统，打开该待审批申请单。\\\",\\n      \\\"审批人B同时登录系统，打开同一待审批申请单。\\\",\\n      \\\"审批人A点击“通过”按钮，前端发出审批通过请求。\\\",\\n      \\\"在审批人A的请求尚未返回之前，审批人B立即点击“驳回”按钮，发出驳回请求。\\\",\\n      \\\"等待两个请求均完成。\\\",\\n      \\\"刷新页面查看该申请单的最终状态及操作记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"最终申请单状态只为“已通过”或“已驳回”中的一种，不会出现部分成功或中间状态；操作记录中仅包含成功执行那一方的操作人和操作时间，另一方的操作被原子拒绝，系统日志可查看到对应的并发冲突处理信息。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"并发通过与撤销-基于状态的互斥\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“已通过”的请假申请单，原申请人账号正常，且审批人账号正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"申请人登录系统，打开该已通过申请单，准备发起撤销操作。\\\",\\n      \\\"同时，另一个审批人登录系统，打开该申请单查看（此时仍为已通过），误操作发起审批通过请求。\\\",\\n      \\\"申请人与审批人几乎同时点击操作，分别发起“撤销”请求和“通过”请求。\\\",\\n      \\\"等待两个请求完成。\\\",\\n      \\\"检查申请单最终状态及操作记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"状态最终只会是“待审批”（撤销成功）或“已通过”（撤销失败，通过因状态不为待审批而实际被拒绝），不会出现状态错乱；若撤销先完成，则状态变为待审批，通过请求因状态不符被拒绝；若通过请求先到达但状态已为通过，实际不触发变更，撤销成功，状态变为待审批。最终只产生一条有效的状态变更记录。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"并发草稿提交-防重复提交\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“草稿”的请假申请单，编辑人员已登录。\\\",\\n    \\\"steps\\\": [\\n      \\\"编辑人员打开该草稿单，点击“提交”按钮。\\\",\\n      \\\"在第一次提交请求尚未返回时，再次快速点击“提交”按钮（或模拟并发提交，如使用多个浏览器tab同时提交）。\\\",\\n      \\\"等待两次请求返回。\\\",\\n      \\\"检查申请单最终状态及操作记录数量。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态仅变为“待审批”一次，不会出现两条待审批记录或状态被覆盖；操作记录中仅有一条提交记录，包含操作人和操作时间。后端保证了草稿提交的幂等性，重复提交被拒绝或合并为一次有效操作。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"撤销后重新审批\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条已通过的请假申请单，已由申请人发起撤销并成功，当前状态为“待审批”。审批人账号正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"审批人登录系统，打开该重新变为待审批的申请单。\\\",\\n      \\\"审批人点击“通过”按钮，执行审批通过操作。\\\",\\n      \\\"验证申请单状态变为“已通过”，并检查操作记录。\\\",\\n      \\\"重新将状态恢复为待审批（可通过再次撤销或后台修改）。\\\",\\n      \\\"审批人再次打开该申请单，点击“驳回”按钮。\\\",\\n      \\\"验证申请单状态变为“已驳回”。\\\"\\n    ],\\n    \\\"expected\\\": \\\"撤销回到待审批后，申请单可以正常被审批人执行“通过”或“驳回”操作，状态正常流转，操作记录依次记录撤销人信息、新的审批通过/驳回信息，无异常限制。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"撤销操作记录验证\\\",\\n    \\\"type\\\": \\\"状态机\\\",\\n    \\\"precondition\\\": \\\"存在一条状态为“已通过”的请假申请单，原审批记录已存在（包含审批人和审批时间）。申请人账号已登录。\\\",\\n    \\\"steps\\\": [\\n      \\\"申请人打开该已通过申请单，点击“撤销”按钮。\\\",\\n      \\\"确认撤销请求成功，状态变为“待审批”。\\\",\\n      \\\"进入申请单的操作日志/操作记录列表。\\\",\\n      \\\"查看撤销操作对应的记录。\\\",\\n      \\\"确认记录中包含操作人（当前申请人）、操作时间，且该记录的标识或类型字段与之前审批通过记录不同（例如操作类型为“撤销”）。\\\"\\n    ],\\n    \\\"expected\\\": \\\"操作记录中新增一条撤销记录，操作人为申请人，操作时间为撤销时刻，该记录与原有的审批通过记录明显区分（如类型/动作字段为“撤销”），且不影响原有审批记录。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"提交流程事务回滚\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条草稿状态的请假申请单，并且能够模拟操作记录写入失败（例如通过Mock、断网或数据库约束暂时失效）。\\\",\\n    \\\"steps\\\": [\\n      \\\"设置环境：使更新操作记录表时强制失败（如删除操作记录表或将其设为只读）。\\\",\\n      \\\"编辑人员操作：对该草稿申请单点击“提交”。\\\",\\n      \\\"系统开始事务：先尝试将申请单状态从‘草稿’更新为‘待审批’，成功。\\\",\\n      \\\"接着尝试写入一条状态变更操作记录（类型为提交），此时写入失败，事务回滚。\\\",\\n      \\\"检查申请单当前状态。\\\",\\n      \\\"检查操作记录表中是否有该次提交的记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态保持为“草稿”，未被更新为“待审批”；操作记录表中无任何新增记录；整个事务回滚，数据保持一致。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"审批通过事务回滚\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条待审批状态的请假申请单，审批人账号正常。模拟操作记录写入失败。\\\",\\n    \\\"steps\\\": [\\n      \\\"设置环境使操作记录写入失败。\\\",\\n      \\\"审批人登录，对该申请单执行“通过”操作。\\\",\\n      \\\"系统尝试更新状态为“已通过”，并写入操作记录。\\\",\\n      \\\"写入操作记录阶段失败，事务回滚。\\\",\\n      \\\"检查申请单状态。\\\",\\n      \\\"检查操作记录表。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态仍为“待审批”，不会变为“已通过”；操作记录表中无通过操作记录，无脏数据残留。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"驳回操作事务回滚\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条待审批状态的请假申请单，审批人账号正常。模拟操作记录写入失败。\\\",\\n    \\\"steps\\\": [\\n      \\\"设置环境使操作记录写入失败。\\\",\\n      \\\"审批人登录，对该申请单执行“驳回”操作。\\\",\\n      \\\"系统尝试更新状态为“已驳回”，并写入操作记录。\\\",\\n      \\\"写入操作记录失败，事务回滚。\\\",\\n      \\\"检查申请单状态。\\\",\\n      \\\"检查操作记录表。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态保持“待审批”不变；操作记录表中无驳回记录，状态与记录一致回滚。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"撤销操作事务回滚\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条已通过状态的请假申请单，申请人账号正常。模拟操作记录写入失败。\\\",\\n    \\\"steps\\\": [\\n      \\\"设置环境使操作记录写入失败。\\\",\\n      \\\"申请人登录，对该申请单执行“撤销”操作。\\\",\\n      \\\"系统尝试更新状态为“待审批”，并写入撤销操作记录。\\\",\\n      \\\"写入操作记录失败，事务回滚。\\\",\\n      \\\"检查申请单状态。\\\",\\n      \\\"检查操作记录表。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单状态保持“已通过”不变，不会变为“待审批”；操作记录表中无撤销记录。数据整体回滚。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"重复提交幂等性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条草稿状态的请假申请单，并确保系统支持幂等处理（如基于请求ID或状态判定）。\\\",\\n    \\\"steps\\\": [\\n      \\\"对该草稿单发起一次有效的提交请求，状态变为待审批，记录一条操作记录。\\\",\\n      \\\"立即再次使用相同的业务参数发起一次提交请求（模拟重复提交）。\\\",\\n      \\\"检查系统响应。\\\",\\n      \\\"查看申请单状态及操作记录数量。\\\"\\n    ],\\n    \\\"expected\\\": \\\"第二次提交被系统识别为重复操作并被拒绝，或返回成功但实际不产生状态变更和记录；最终申请单状态仍为待审批，操作记录表中只有第一次提交的一条记录，无重复数据。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-011\\\",\\n    \\\"title\\\": \\\"重复审批通过幂等性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条待审批状态的申请单，审批人正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"审批人对该待审批单执行一次“通过”操作，状态变为已通过，记录一条审批通过记录。\\\",\\n      \\\"再次对该申请单（当前状态已通过）发起“通过”请求。\\\",\\n      \\\"观察系统响应。\\\",\\n      \\\"检查申请单状态和操作记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"第二次通过请求被拒绝（因为状态不为待审批），申请单状态保持“已通过”，操作记录未新增，实现幂等效果。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-012\\\",\\n    \\\"title\\\": \\\"重复驳回幂等性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条待审批状态的申请单，审批人正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"审批人对该待审批单执行一次“驳回”操作，状态变为已驳回，记录一条驳回记录。\\\",\\n      \\\"再次对该已驳回申请单发起“驳回”请求。\\\",\\n      \\\"观察系统响应。\\\",\\n      \\\"检查状态和操作记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"第二次驳回请求被拒绝，状态保持在“已驳回”不变，操作记录无增加。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-013\\\",\\n    \\\"title\\\": \\\"重复撤销幂等性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条已通过状态的申请单，申请人正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"申请人对该已通过单执行一次“撤销”操作，状态变为待审批，记录一条撤销记录。\\\",\\n      \\\"再次对该申请单（当前状态待审批）发起“撤销”请求。\\\",\\n      \\\"观察系统响应。\\\",\\n      \\\"检查状态和操作记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"第二次撤销请求被拒绝，因为撤销仅对已通过状态有效，申请单状态仍为“待审批”，操作记录不再新增。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-014\\\",\\n    \\\"title\\\": \\\"缓存一致性验证\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"系统使用了缓存层（如Redis）缓存请假申请单状态，设置合理过期时间或主动失效机制。\\\",\\n    \\\"steps\\\": [\\n      \\\"查询一条状态为“待审批”的申请单，确认缓存中存在该状态（可先预热）。\\\",\\n      \\\"审批人执行“通过”操作，等待操作成功返回。\\\",\\n      \\\"立即通过查询接口再次查询该申请单状态（读取可能命中缓存）。\\\",\\n      \\\"检查返回的状态值。\\\",\\n      \\\"如果状态正确，再抽查数据库中的状态是否一致。\\\"\\n    ],\\n    \\\"expected\\\": \\\"状态变更后，立即查询得到的状态为“已通过”，不是旧的“待审批”；缓存与数据库保持一致，缓存失效或更新策略有效。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-015\\\",\\n    \\\"title\\\": \\\"写后读一致性验证\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一条草稿状态的申请单，编辑人员已登录。\\\",\\n    \\\"steps\\\": [\\n      \\\"编辑人员在草稿单详情页执行“提交”操作。\\\",\\n      \\\"提交请求返回成功（状态变为待审批）。\\\",\\n      \\\"不等待任何延迟，立即在同一连接或会话中执行该申请单的查询详情接口（read-after-write）。\\\",\\n      \\\"断言查询结果中的状态字段。\\\",\\n      \\\"再通过另一个独立连接或新窗口查询确认。\\\"\\n    ],\\n    \\\"expected\\\": \\\"提交后立即读取的状态显示为“待审批”，而非“草稿”；系统保证了写后读的强一致性，无脏读或旧数据。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-011\\\",\\n    \\\"title\\\": \\\"审批后读一致性验证\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"系统中存在一个待审批状态（待审批）的请假申请单，并已知其申请单ID。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 在该待审批的申请单上执行审批通过操作。\\\",\\n      \\\"2. 立即调用查询接口（如刷新页面或API查询）获取该申请单的最新状态。\\\",\\n      \\\"3. 再次新建一个待审批的申请单，执行驳回操作，立即查询状态。\\\",\\n      \\\"4. 将上一步的申请单（已驳回）作为终态，无操作；再对一个已通过的申请单执行撤销操作，立即查询状态。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 通过操作后查询到的状态为“已通过”，且状态更新时间为当前操作时间，无延迟。2. 驳回操作后立即查询状态为“已驳回”。3. 撤销操作后立即查询状态为“待审批”。所有查询结果均反映最新终态，数据一致。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-012\\\",\\n    \\\"title\\\": \\\"操作记录级联插入验证\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"准备一个草稿状态的请假申请单，并准备好一个可用的审批人账号。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 将草稿编辑后提交，使申请单进入待审批状态。\\\",\\n      \\\"2. 使用审批人账号对该待审批申请单执行通过操作。\\\",\\n      \\\"3. 通过数据库或后端接口查询该申请单关联的操作记录表。\\\",\\n      \\\"4. 再用另一待审批单执行驳回操作，同样查询操作记录表。\\\",\\n      \\\"5. 对一个已通过申请单执行撤销操作，查询操作记录。\\\"\\n    ],\\n    \\\"expected\\\": \\\"每次状态变更（提交、通过、驳回、撤销）后，操作记录表中都新增一条记录，且记录中操作人字段为实际操作的审批人/提交人，操作时间字段为实际时间，无遗漏或空值，保证关联记录完整。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-013\\\",\\n    \\\"title\\\": \\\"异常删除级联处理验证\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"存在一个待审批请假申请单，且该申请单至少有一条关联的操作记录（例如已提交的记录）。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 记录下该申请单的ID及其关联操作记录的条数或主键。\\\",\\n      \\\"2. 通过后端接口或数据库操作，以不通过前端校验的方式直接删除该请假申请单（模拟异常删除）。\\\",\\n      \\\"3. 查询操作记录表，查看原关联的操作记录是否仍然存在且有效。\\\"\\n    ],\\n    \\\"expected\\\": \\\"申请单被删除后，其关联的操作记录应被级联删除或标记为失效（如is_deleted=1）。查询操作记录时，对应记录不再显示或标记为无效，保证不会出现找不到主记录的孤立操作记录，维持数据一致性。\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"state_machine\",\"data_consistency\"]}",
+          "latencyMs": 586152,
+          "cached": false,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "26236",
+                "content-type": "application/json",
+                "date": "Wed, 01 Jul 2026 12:23:53 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "state_machine",
+            "data_consistency"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "kb_name": "eval_kb",
+            "question": "某请假系统中申请单存在草稿→待审批→已通过/已驳回的状态流转，请从状态机角度设计测试用例",
+            "expected_skills": "[\"state_machine\"]",
+            "expected_test_point_keywords": "[\"草稿\",\"待审批\",\"已通过\",\"已驳回\",\"状态流转\"]",
+            "evaluation_focus": "验证仅含状态流转描述的需求片段能否让模型精准选择 state_machine，不被其他维度干扰",
+            "requirement_doc": "请假申请单状态包括草稿、待审批、已通过、已驳回。草稿编辑后提交进入待审批。待审批下审批人可执行通过或驳回。已通过可被撤销回到待审批。已驳回为终态不可再操作。每次状态变更需记录操作人和操作时间。"
+          },
+          "description": "Row #4",
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 3,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb",
+          "question": "某请假系统中申请单存在草稿→待审批→已通过/已驳回的状态流转，请从状态机角度设计测试用例",
+          "expected_skills": "[\"state_machine\"]",
+          "expected_test_point_keywords": "[\"草稿\",\"待审批\",\"已通过\",\"已驳回\",\"状态流转\"]",
+          "evaluation_focus": "验证仅含状态流转描述的需求片段能否让模型精准选择 state_machine，不被其他维度干扰",
+          "requirement_doc": "请假申请单状态包括草稿、待审批、已通过、已驳回。草稿编辑后提交进入待审批。待审批下审批人可执行通过或驳回。已通过可被撤销回到待审批。已驳回为终态不可再操作。每次状态变更需记录操作人和操作时间。"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "26236",
+              "content-type": "application/json",
+              "date": "Wed, 01 Jul 2026 12:23:53 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "20c83c93-1924-4d71-a83d-e27e8c111fe9",
+        "latencyMs": 93341,
+        "namedScores": {},
+        "prompt": {
+          "raw": "某账户系统采用Redis缓存加MySQL持久化的双写方案，请从数据一致性角度设计测试用例",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"充值缓存更新失败后读一致性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"1. 用户A账户余额为100元，MySQL与Redis缓存中余额均为100；\\\\n2. 系统处于正常服务状态，充值接口可用；\\\\n3. 准备Mock工具可控制Redis更新操作返回失败。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 调用充值接口，为用户A充值50元，传入唯一充值单号。\\\",\\n      \\\"2. 在充值处理过程中，通过Mock使Redis更新缓存操作失败（例如返回超时或连接错误），但MySQL更新成功。\\\",\\n      \\\"3. 等待充值请求返回，检查返回结果或日志确认充值业务已成功（因DB写入成功）。\\\",\\n      \\\"4. 调用余额查询接口查询用户A的余额。\\\",\\n      \\\"5. 检查Redis缓存中用户A的余额值是否与MySQL一致；检查Redis是否已被回写为最新值。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 充值接口返回成功，数据库余额更新为150；\\\\n2. 首次查询余额时，因缓存缺失或旧值，系统从数据库加载最新余额150，并回写到Redis缓存；\\\\n3. 最终Redis缓存中的余额也为150，后续查询直接命中缓存且值为150；\\\\n4. 整个流程无数据不一致残留。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"批量扣款部分失败回滚\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"1. 系统中有三个有效账户：账户A余额200，账户B余额150，账户C余额100，DB与缓存一致；\\\\n2. 批量扣款接口可用，预置一个扣款批次：A扣100，B扣200（超余额，模拟失败），C扣50。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 调用批量扣款接口，提交扣款批次，包含三个扣款指令。\\\",\\n      \\\"2. 模拟账户B扣款时因余额不足导致业务校验失败，其他两个账户（A、C）的DB扣款操作执行成功。\\\",\\n      \\\"3. 检查批量扣款接口最终响应，应指示部分失败，整体事务回滚。\\\",\\n      \\\"4. 查询账户A、B、C的数据库余额。\\\",\\n      \\\"5. 查询账户A、B、C的Redis缓存余额（可直接或等主从同步后）。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 接口返回失败状态，明确表示扣款未全部成功；\\\\n2. 数据库和缓存中，账户A余额仍为200，账户B仍为150，账户C仍为100，即所有账户余额均回滚至扣款前状态；\\\\n3. 没有任何账户被实际扣款，数据无中间状态。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"批量扣款回滚后日志一致性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"1. 余额变动日志表初始为空或仅有历史记录；\\\\n2. 同TC-002准备三个账户，A余额200，B余额150，C余额100，提交扣款批次：A扣100，B扣200，C扣50；\\\\n3. 日志记录功能开启，记录每笔扣款操作的日志（包含流水号、金额、状态等）。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 触发批量扣款，由于B余额不足导致业务失败，整体回滚。\\\",\\n      \\\"2. 查询数据库的余额变动日志表，获取该批次相关的所有日志记录。\\\",\\n      \\\"3. 检查日志中的记录状态，以及每条日志是否与最终账户余额保持一致。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 账户A、C可能产生初始的扣款日志，但回滚后这些日志应被标记为“已冲正”或“已回滚”，或者系统直接不保留已回滚业务的成功日志；\\\\n2. 最终任何账户余额值和对应日志记录（包括冲正记录）必须能够一一对应，余额显示值等于最近一次有效变动后的值；\\\\n3. 没有未冲正的成功扣款日志残留，日志数据与余额数据严格一致。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"充值写后立即读一致性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"1. 用户A初始余额100，DB和缓存均为100；\\\\n2. 系统正常，无延迟和故障。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 发起充值请求，充值金额50，使用唯一单号。\\\",\\n      \\\"2. 在充值接口返回成功响应后，立即（如0延迟）调用余额查询接口查询用户A余额。\\\",\\n      \\\"3. 通过抓包或Mock验证读请求是直达DB还是命中了缓存，检查Redis中余额是否已更新。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 充值接口返回成功，数据库余额变为150，Redis缓存立即更新为150（因先写DB后更新缓存，正常情况下更新成功）；\\\\n2. 立即查询余额，系统返回150，不是旧值100；\\\\n3. 缓存与数据库一致，未出现读到旧值的情况。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"充值幂等性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"1. 用户A初始余额100，DB与缓存一致；\\\\n2. 充值接口支持幂等，通过充值单号进行去重；\\\\n3. 准备同一个合法的充值单号（如“recharge-123”）。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 第一次调用充值接口，传入单号“recharge-123”，充值金额50。\\\",\\n      \\\"2. 等待成功返回后，立即用相同的单号再次调用充值接口（金额50）。\\\",\\n      \\\"3. 调用余额查询接口查看用户A余额。\\\",\\n      \\\"4. 检查数据库中充值记录是否存在重复。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 第一次充值成功，余额变为150；\\\\n2. 第二次相同单号的请求仍然返回成功，但实际未增加余额，余额仍为150；\\\\n3. 数据库充值记录中只有一条有效记录，或者含有幂等标识，不会重复计入金额。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"批量扣款幂等性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"1. 账户A余额200，账户B余额150；\\\\n2. 批量扣款接口支持幂等，基于批次单号去重；\\\\n3. 准备一个批次单号“batch-456”，扣款指令：A扣100，B扣100（合计合法）。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 第一次调用批量扣款，提交批次单号“batch-456”，扣款A 100元，B 100元，预期全部成功。\\\",\\n      \\\"2. 成功后再次用完全相同的内容（同一批次单号）调用批量扣款接口。\\\",\\n      \\\"3. 查询账户A、B的余额。\\\",\\n      \\\"4. 检查数据库批量扣款相关表及日志。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 第一次扣款成功，A余额变为100，B余额变为50；\\\\n2. 第二次重复提交返回成功，但未执行实际扣款，A余额仍为100，B余额仍为50；\\\\n3. 数据库中与该批次相关的扣款记录只有一套，没有重复扣款记录。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"充值DB事务回滚时缓存不变\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"1. 用户A初始余额100，DB和缓存均为100；\\\\n2. 模拟一种会使DB事务失败回滚的场景（如账户被锁定、数据库约束冲突等），但缓存更新操作正常情况下不会被调用。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 调用充值接口，传入一个会导致数据库事务失败的充值请求（例如充值金额为负数触发业务校验异常回滚，或通过Mock使DB更新抛出异常）。\\\",\\n      \\\"2. 充值请求返回失败。\\\",\\n      \\\"3. 查询用户A的DB余额和Redis缓存余额。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 接口返回失败，数据库事务回滚，余额保持100；\\\\n2. 由于DB写入失败，代码逻辑不会执行后续Redis更新，所以Redis缓存余额也保持100；\\\\n3. 数据库与缓存数据一致，没有脏数据。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"缓存修复后数据一致性\\\",\\n    \\\"type\\\": \\\"数据一致性\\\",\\n    \\\"precondition\\\": \\\"1. 用户A初始余额100，DB和缓存均为100；\\\\n2. 模拟一次充值：DB写入成功为150，但Redis更新失败，此时缓存保留旧值100或缺失；\\\\n3. 已通过读触发加载修复机制，将缓存恢复为最新值150。\\\",\\n    \\\"steps\\\": [\\n      \\\"1. 在缓存修复后，用户A的缓存余额已变为150。\\\",\\n      \\\"2. 再发起一笔充值，金额50，正常写DB并更新缓存。\\\",\\n      \\\"3. 检查DB余额应为200，查询缓存余额。\\\",\\n      \\\"4. 再发起一笔扣款10元，检查是否基于正确的余额计算和扣减。\\\"\\n    ],\\n    \\\"expected\\\": \\\"1. 第二次充值后，DB余额=200，缓存余额立即更新为200；\\\\n2. 扣款操作正确从200扣减到190，且DB和缓存均为190；\\\\n3. 整个过程中，修复后的缓存成为后续增量更新可靠的基础，没有出现因旧缓存导致的计算偏差（如回退到100再充值变成150之类的错误）。\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"data_consistency\"]}",
+          "latencyMs": 93341,
+          "cached": false,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "8713",
+                "content-type": "application/json",
+                "date": "Wed, 01 Jul 2026 12:20:44 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "data_consistency"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "kb_name": "eval_kb",
+            "question": "某账户系统采用Redis缓存加MySQL持久化的双写方案，请从数据一致性角度设计测试用例",
+            "expected_skills": "[\"data_consistency\"]",
+            "expected_test_point_keywords": "[\"缓存\",\"数据库\",\"双写\",\"回滚\",\"余额一致\"]",
+            "evaluation_focus": "验证仅含缓存持久化描述的需求片段能否让模型精准选择 data_consistency，不被其他维度干扰",
+            "requirement_doc": "用户账户余额采用Redis缓存加MySQL持久化双写方案。充值流程为先写数据库后更新缓存。若缓存更新失败，下次读取需从数据库加载最新值。批量扣款时若部分失败，已扣款项需回滚。账户余额变动日志与余额值需严格对应。"
+          },
+          "description": "Row #5",
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 4,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb",
+          "question": "某账户系统采用Redis缓存加MySQL持久化的双写方案，请从数据一致性角度设计测试用例",
+          "expected_skills": "[\"data_consistency\"]",
+          "expected_test_point_keywords": "[\"缓存\",\"数据库\",\"双写\",\"回滚\",\"余额一致\"]",
+          "evaluation_focus": "验证仅含缓存持久化描述的需求片段能否让模型精准选择 data_consistency，不被其他维度干扰",
+          "requirement_doc": "用户账户余额采用Redis缓存加MySQL持久化双写方案。充值流程为先写数据库后更新缓存。若缓存更新失败，下次读取需从数据库加载最新值。批量扣款时若部分失败，已扣款项需回滚。账户余额变动日志与余额值需严格对应。"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "8713",
+              "content-type": "application/json",
+              "date": "Wed, 01 Jul 2026 12:20:44 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "Array.isArray(output)"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+              }
+            },
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "Assertion passed",
+              "assertion": {
+                "type": "javascript",
+                "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+              }
+            }
+          ]
+        },
+        "id": "6a98a2f6-42b6-4ca1-b2f1-dcd572ea980b",
+        "latencyMs": 433344,
+        "namedScores": {},
+        "prompt": {
+          "raw": "某电商下单流程涉及商品模块、库存模块、优惠券模块和支付模块的协同，请从组合场景角度设计测试用例",
+          "label": "{{question}}",
+          "config": {}
+        },
+        "promptId": "d3bcaf71c11c2678899be04d872718325f0916b3b0705e805ee29930663a42e2",
+        "promptIdx": 0,
+        "provider": {
+          "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+          "label": "testcase_design_agent"
+        },
+        "response": {
+          "raw": "{\"answer\":\"[\\n  {\\n    \\\"id\\\": \\\"TC-001\\\",\\n    \\\"title\\\": \\\"多商品多券正交组合\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A原价100元，库存10件；商品B原价200元，库存5件。优惠券C（满50减10，适用于A）可用，优惠券D（8折，适用于B）可用。支付服务正常。用户已登录。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户下单选择商品A和商品B，数量均为1。\\\",\\n      \\\"对商品A应用优惠券C，系统校验并计算折后价90元。\\\",\\n      \\\"对商品B应用优惠券D，系统校验并计算折后价160元。\\\",\\n      \\\"系统锁定库存：商品A预占1件，可用库存变为9；商品B预占1件，可用库存变为4。\\\",\\n      \\\"系统调用支付接口，支付金额为250元（90+160）。\\\",\\n      \\\"支付返回成功，系统确认扣减预占库存，商品A库存9，商品B库存4。\\\",\\n      \\\"系统标记优惠券C和D为已使用。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单创建成功，商品A折后价90元，商品B折后价160元，总支付250元。商品A最终库存9件，商品B库存4件。优惠券C、D状态均为已使用。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-002\\\",\\n    \\\"title\\\": \\\"一件无券一件有券+库存部分不足\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A原价50元，库存10件；商品B原价80元，库存0件。优惠券E（无门槛减5元，适用于A）可用。支付服务正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户下单选择商品A（使用优惠券E）和商品B（不使用券），数量各1。\\\",\\n      \\\"系统对商品A应用优惠券E，校验通过，折后价45元。\\\",\\n      \\\"系统尝试锁定库存：商品A库存充足，锁定1件，预占库存9；商品B库存为0，锁定失败。\\\",\\n      \\\"库存锁定失败，触发流程终止。\\\",\\n      \\\"系统释放已锁定资源：回滚商品A库存锁定，库存恢复为10；释放优惠券E，状态回滚为未使用。\\\",\\n      \\\"订单标记为失败，无支付动作。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单失败，商品A库存保持10件，商品B库存保持0件。优惠券E仍为未使用状态。未产生支付请求。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-003\\\",\\n    \\\"title\\\": \\\"多商品同券+支付超时\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A原价60元，库存5件；商品B原价50元，库存3件。优惠券F（满100减15，全店通用）可用。支付服务配置为超时10秒。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户下单选择商品A和商品B，数量各1，均使用优惠券F。\\\",\\n      \\\"系统校验优惠券F：总原价110元，满足条件，折后总价95元（分摊到商品自行计算）。\\\",\\n      \\\"系统锁定库存：商品A预占1件，库存变为4；商品B预占1件，库存变为2。\\\",\\n      \\\"系统调用支付接口，支付金额95元，支付请求超时未返回成功。\\\",\\n      \\\"系统判定支付失败，释放资源：回滚商品A库存至5，商品B库存至3。\\\",\\n      \\\"释放优惠券F，状态恢复未使用。订单取消。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单取消，商品A库存恢复为5件，商品B库存恢复为3件。优惠券F恢复可使用状态。支付记录为失败。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-004\\\",\\n    \\\"title\\\": \\\"优惠券无效+库存正常组合\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A原价100元，库存10件；商品B原价80元，库存5件。优惠券G（仅限特定品类）对商品A不可用，优惠券H（满70减7）对商品B可用。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户下单选择商品A（尝试使用优惠券G）和商品B（使用优惠券H），数量各1。\\\",\\n      \\\"系统依次校验优惠券：先校验商品A的券G，返回不可用错误。\\\",\\n      \\\"优惠券模块返回失败，流程终止，未进入库存锁定环节。\\\",\\n      \\\"系统不锁定任何商品库存，也不占用优惠券H。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单失败，商品A库存10件，商品B库存5件。优惠券H未被使用，状态正常。未发生库存锁定操作。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-005\\\",\\n    \\\"title\\\": \\\"全链路正常串联验证\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A原价120元，库存2件。优惠券I（满100减20）可用。支付服务正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户选择商品A，数量1，使用优惠券I。\\\",\\n      \\\"系统校验优惠券I，折后价100元。\\\",\\n      \\\"锁定库存：商品A库存从2预占为1。\\\",\\n      \\\"发起支付，支付金额100元。\\\",\\n      \\\"支付返回成功，系统确认扣减库存，商品A库存最终为1。\\\",\\n      \\\"优惠券I状态标记为已使用。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单支付成功，折后价100元，支付金额100元。商品A库存扣减为1，优惠券已使用。各模块数据流转一致。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-006\\\",\\n    \\\"title\\\": \\\"库存锁定失败回滚券状态\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A原价60元，库存1件（并发竞争导致锁定失败）。优惠券J（减5元）可用。模拟库存服务在锁定商品A时返回失败。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户选择商品A，数量1，使用优惠券J。\\\",\\n      \\\"系统应用优惠券J，校验通过，折后价55元，券状态置为预占用。\\\",\\n      \\\"系统尝试锁定库存，库存服务返回锁定失败（如库存不足）。\\\",\\n      \\\"流程终止，系统执行回滚：释放优惠券J，状态恢复为未使用。\\\",\\n      \\\"商品A库存保持1件，未被扣减。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单失败，商品A库存仍为1件。优惠券J状态恢复为未使用。未发起支付。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-007\\\",\\n    \\\"title\\\": \\\"部分商品锁定失败混合场景\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A库存5件，优惠券K（减10）适用；商品B库存5件，优惠券L（8折）适用；商品C库存0件，优惠券M（无门槛减5）适用。支付服务正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户下单选择商品A（券K）、商品B（券L）、商品C（券M），数量均1。\\\",\\n      \\\"系统依次校验并应用优惠券K、L、M，均通过，券状态变为预占用。\\\",\\n      \\\"开始锁定库存：先锁商品A成功，预占1件（库存4）；再锁商品B成功，预占1件（库存4）；最后锁商品C时因库存0失败。\\\",\\n      \\\"锁定失败，系统释放资源：回滚商品A库存至5，回滚商品B库存至5，释放优惠券K、L、M。\\\",\\n      \\\"订单终止，无支付。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单失败，商品A、B、C库存均无变化（5,5,0）。三张优惠券全部恢复未使用状态。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-008\\\",\\n    \\\"title\\\": \\\"条件叠加：券+限时折扣同时生效\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A原价150元，当前有限时折扣活动打9折，优惠券N（满120减20）可用，叠加规则为先折扣后券。库存10件，支付正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户选择商品A，数量1，同时享受限时折扣和优惠券N。\\\",\\n      \\\"系统计算折后价：先应用限时折扣，150*0.9=135元；再应用券N，满足满120减20，折后115元。\\\",\\n      \\\"锁定库存，商品A预占1件，库存变为9。\\\",\\n      \\\"支付115元，成功。\\\",\\n      \\\"库存确认扣减为9，优惠券N标记已使用。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单支付成功，最终折后价115元。商品A库存9件。叠加规则正确，券已使用。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-009\\\",\\n    \\\"title\\\": \\\"券使用次数耗尽+库存充足\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A库存10件。优惠券O为限量使用券，已被领取满额/使用次数达上限。支付服务正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户选择商品A，数量1，尝试使用优惠券O。\\\",\\n      \\\"系统校验优惠券O，返回使用次数已耗尽错误。\\\",\\n      \\\"流程在优惠券阶段失败，不进入库存锁定。\\\",\\n      \\\"商品A库存仍为10件，未发起支付。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单失败，商品A库存保持10件。优惠券O状态仍为已耗尽。未产生任何库存锁定与支付。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-010\\\",\\n    \\\"title\\\": \\\"多商品金额券与折扣券混合\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A原价100元，库存5件；商品B原价200元，库存3件。优惠券P（满80减20，适用于A）可用，优惠券Q（7折，适用于B）可用。支付服务正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户下单选择商品A（券P）和商品B（券Q），数量各1。\\\",\\n      \\\"对商品A应用券P，折后价80元；对商品B应用券Q，折后价140元。\\\",\\n      \\\"锁定库存：商品A库存变为4，商品B库存变为2。\\\",\\n      \\\"支付总金额220元，支付成功。\\\",\\n      \\\"确认库存扣减，券P和Q状态标记为已使用。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单支付成功，总支付220元。商品A库存4件，商品B库存2件。优惠券P、Q均已使用。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-011\\\",\\n    \\\"title\\\": \\\"零库存商品+有效券组合\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"商品A库存0件。优惠券R（满5减3）可用，且对商品A有效。支付服务正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户选择商品A，数量1，使用优惠券R。\\\",\\n      \\\"系统应用优惠券R，校验通过，折后价计算成功（原价-3）。\\\",\\n      \\\"尝试锁定库存，因商品A库存为0，锁定失败。\\\",\\n      \\\"流程终止，释放优惠券R，状态恢复未使用。\\\",\\n      \\\"订单标记失败。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单失败，商品A库存保持0件。优惠券R未被使用。未发生支付。\\\"\\n  },\\n  {\\n    \\\"id\\\": \\\"TC-012\\\",\\n    \\\"title\\\": \\\"大数量商品多券并发冲突\\\",\\n    \\\"type\\\": \\\"组合场景\\\",\\n    \\\"precondition\\\": \\\"10件不同商品库存均充足（>0）。每件商品各绑定一张不同的优惠券，其中优惠券S与优惠券T存在互斥规则（不可同时使用）。支付服务正常。\\\",\\n    \\\"steps\\\": [\\n      \\\"用户下单选择10件商品，数量均1，分别为每件商品应用各自优惠券。\\\",\\n      \\\"系统在优惠券校验阶段检测到券S与券T互斥，校验失败。\\\",\\n      \\\"流程在优惠券模块终止，未进入库存锁定步骤。\\\",\\n      \\\"系统释放已校验但未使用的所有优惠券（包括无互斥关系的券）。\\\",\\n      \\\"所有商品库存均未锁定，保持原数量。\\\"\\n    ],\\n    \\\"expected\\\": \\\"订单失败，10件商品库存均未减少。所有优惠券恢复未使用状态。无任何支付请求。\\\"\\n  }\\n]\",\"agent\":\"testcase_design\",\"selected_skills\":[\"combinatorial\"]}",
+          "latencyMs": 433344,
+          "cached": false,
+          "metadata": {
+            "http": {
+              "status": 200,
+              "statusText": "OK",
+              "headers": {
+                "content-length": "10935",
+                "content-type": "application/json",
+                "date": "Wed, 01 Jul 2026 12:27:23 GMT",
+                "server": "uvicorn"
+              }
+            }
+          },
+          "output": [
+            "combinatorial"
+          ],
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          }
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "vars": {
+            "kb_name": "eval_kb",
+            "question": "某电商下单流程涉及商品模块、库存模块、优惠券模块和支付模块的协同，请从组合场景角度设计测试用例",
+            "expected_skills": "[\"combinatorial\"]",
+            "expected_test_point_keywords": "[\"商品\",\"库存\",\"优惠券\",\"支付\",\"模块协同\"]",
+            "evaluation_focus": "验证仅含多模块协同描述的需求片段能否让模型精准选择 combinatorial，不被其他维度干扰",
+            "requirement_doc": "下单流程需商品、库存、优惠券、支付四模块协同。用户选择商品后应用优惠券计算折后价，再锁定库存，最后调用支付。任一模块返回失败均终止流程并释放已锁定资源。多件不同商品可分别使用不同优惠券，各商品库存独立管理。"
+          },
+          "description": "Row #6",
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "Array.isArray(output)"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+            },
+            {
+              "type": "javascript",
+              "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 5,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "kb_name": "eval_kb",
+          "question": "某电商下单流程涉及商品模块、库存模块、优惠券模块和支付模块的协同，请从组合场景角度设计测试用例",
+          "expected_skills": "[\"combinatorial\"]",
+          "expected_test_point_keywords": "[\"商品\",\"库存\",\"优惠券\",\"支付\",\"模块协同\"]",
+          "evaluation_focus": "验证仅含多模块协同描述的需求片段能否让模型精准选择 combinatorial，不被其他维度干扰",
+          "requirement_doc": "下单流程需商品、库存、优惠券、支付四模块协同。用户选择商品后应用优惠券计算折后价，再锁定库存，最后调用支付。任一模块返回失败均终止流程并释放已锁定资源。多件不同商品可分别使用不同优惠券，各商品库存独立管理。"
+        },
+        "metadata": {
+          "http": {
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-length": "10935",
+              "content-type": "application/json",
+              "date": "Wed, 01 Jul 2026 12:27:23 GMT",
+              "server": "uvicorn"
+            }
+          },
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      }
+    ],
+    "stats": {
+      "successes": 6,
+      "failures": 0,
+      "errors": 0,
+      "tokenUsage": {
+        "prompt": 0,
+        "completion": 0,
+        "cached": 0,
+        "total": 0,
+        "numRequests": 6,
+        "completionDetails": {
+          "reasoning": 0,
+          "acceptedPrediction": 0,
+          "rejectedPrediction": 0,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0
+        },
+        "assertions": {
+          "total": 0,
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "numRequests": 0,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          }
+        }
+      },
+      "durationMs": 773713,
+      "evaluationDurationMs": 773713
+    }
+  },
+  "config": {
+    "tags": {},
+    "description": "TestCaseDesignAgent - Phase 0 Skill Selection",
+    "prompts": [
+      "{{question}}"
+    ],
+    "providers": [
+      {
+        "id": "http://127.0.0.1:8000/api/kb/{{kb_name}}/ask",
+        "label": "testcase_design_agent",
+        "config": {
+          "method": "POST",
+          "headers": {
+            "Content-Type": "application/json",
+            "X-Project-Id": "eval-project"
+          },
+          "body": {
+            "question": "{{question}}",
+            "app": "testcase_design",
+            "requirement_doc": "{{requirement_doc}}"
+          },
+          "transformResponse": "json.selected_skills"
+        }
+      }
+    ],
+    "tests": [
+      {
+        "path": "../AiLearning/tests/testcase_design_eval_set.json"
+      }
+    ],
+    "env": {},
+    "defaultTest": {
+      "vars": {
+        "kb_name": "eval_kb"
+      },
+      "assert": [
+        {
+          "type": "javascript",
+          "value": "Array.isArray(output)"
+        },
+        {
+          "type": "javascript",
+          "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return true;\nreturn expected.some((s) => output.includes(s));\n"
+        },
+        {
+          "type": "javascript",
+          "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 0) return output.length === 0;\nreturn output.length > 0;\n"
+        },
+        {
+          "type": "javascript",
+          "value": "const raw = context.vars.expected_skills;\nlet expected = [];\nif (Array.isArray(raw)) {\n  expected = raw;\n} else if (typeof raw === 'string') {\n  try { const p = JSON.parse(raw); expected = Array.isArray(p) ? p : [raw]; } catch { expected = [raw]; }\n}\nif (expected.length === 1) return output.length <= 3;\nreturn true;\n"
+        }
+      ],
+      "options": {},
+      "metadata": {}
+    },
+    "outputPath": [
+      "./phase0_result.json"
+    ],
+    "extensions": [],
+    "metadata": {},
+    "evaluateOptions": {}
+  },
+  "shareableUrl": null,
+  "metadata": {
+    "promptfooVersion": "0.121.17",
+    "nodeVersion": "v24.18.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "exportedAt": "2026-07-01T12:31:41.400Z",
+    "evaluationCreatedAt": "2026-07-01T12:18:47.621Z"
+  },
+  "vars": [
+    "kb_name",
+    "question",
+    "expected_skills",
+    "expected_test_point_keywords",
+    "evaluation_focus",
+    "requirement_doc"
+  ],
+  "runtimeOptions": {
+    "eventSource": "cli",
+    "showProgressBar": true,
+    "repeat": 1,
+    "maxConcurrency": 4,
+    "cache": false
+  }
+}

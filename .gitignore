@@ -1,0 +1,24 @@
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+chroma_db/
+data/synthesis/
+.env
+*.log
+.DS_Store
+traces/
+outputs/
+
+# 敏感与内部资产（2026-08-23 公开前加固）
+config.py
+bm25_indices/
+model_store/
+agent-design-workspace/
+AiLearning/docs/*.pdf
+AiLearning/docs/补充公司信息页优化.*
+_项目总结_AI测试用例设计Agent.md
+.idea/
+*.iml
+AiLearning/rag/tests/*.json
+.git.backup*/

@@ -1,0 +1,48 @@
+# M1：agent loop 轨迹评测
+# 验证 testcase_design capability 的 loop 行为：按需加载技能、落盘产物、正常终止。
+# 运行：promptfoo eval -c promptfoo/m1_trajectory.yaml --no-cache
+
+description: M1 agent loop 轨迹评测（testcase_design capability）
+
+providers:
+  - id: file://harness_provider.py
+    config:
+      # promptfoo 默认用系统 python（无项目依赖），显式指向项目 .venv
+      pythonExecutable: /Users/kaka/PycharmProjects/AiProject/.venv/bin/python
+
+prompts:
+  - "{{requirement}}"
+
+tests:
+  - description: 边界值需求 → 加载 boundary_value + write_output + final
+    vars:
+      requirement: |
+        设计一个优惠券发放功能的测试用例。需求如下：
+        平台运营可向用户发放折扣券，折扣率取值范围为 0%-100%（含边界），
+        每位用户每批限领 1-10 张，单批发放总量上限 10000 张。
+        请重点覆盖这些数值约束的边界场景。
+    assert:
+      - type: javascript
+        value: file://assertions/trajectory.js:assertBoundary
+
+  - description: 异常路径需求 → 加载 exception_path + write_output + final
+    vars:
+      requirement: |
+        设计一个订单支付回调功能的测试用例。需求如下：
+        用户支付完成后，第三方支付网关异步回调我方接口通知支付结果，
+        我方确认后更新订单状态，并向消息队列发送一条订单已支付消息供下游消费。
+        请重点覆盖第三方依赖不可用、响应异常等场景。
+    assert:
+      - type: javascript
+        value: file://assertions/trajectory.js:assertException
+
+  - description: 多维度需求 → boundary_value 和 exception_path 都加载 + write_output
+    vars:
+      requirement: |
+        设计一个批量转账功能的测试用例。需求如下：
+        企业用户可发起批量转账，单笔金额 0.01-50000 元，每批最多 100 笔，
+        转账指令通过消息队列异步提交给银行渠道处理，银行渠道返回处理结果后更新转账状态。
+        请同时覆盖金额/笔数的数值边界，以及消息队列、银行渠道等第三方依赖的异常场景。
+    assert:
+      - type: javascript
+        value: file://assertions/trajectory.js:assertMulti
