@@ -1,0 +1,444 @@
+{
+  "evalId": "eval-Zwe-2026-10-25T16:12:53",
+  "results": {
+    "version": 3,
+    "timestamp": "2026-10-25T16:12:53.934Z",
+    "prompts": [
+      {
+        "id": "029e43347535dc89edfeea8984803d6df4ebe70f240734610007cf1222600f01",
+        "raw": "{{source}}",
+        "label": "{{source}}",
+        "provider": "file://parse_provider.py",
+        "metrics": {
+          "score": 2,
+          "testPassCount": 2,
+          "testFailCount": 0,
+          "testErrorCount": 0,
+          "assertPassCount": 2,
+          "assertFailCount": 0,
+          "totalLatencyMs": 273717,
+          "tokenUsage": {
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "total": 0,
+            "numRequests": 2,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            },
+            "assertions": {
+              "total": 0,
+              "prompt": 0,
+              "completion": 0,
+              "cached": 0,
+              "numRequests": 0,
+              "completionDetails": {
+                "reasoning": 0,
+                "acceptedPrediction": 0,
+                "rejectedPrediction": 0,
+                "cacheReadInputTokens": 0,
+                "cacheCreationInputTokens": 0
+              }
+            }
+          },
+          "namedScores": {},
+          "namedScoresCount": {},
+          "namedScoreWeights": {},
+          "cost": 0
+        }
+      }
+    ],
+    "results": [
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "真实PRD：结构合法（2流程/5任务/9规则，open_questions=5，assumed=1）",
+              "assertion": {
+                "type": "javascript",
+                "value": "file://assertions/parse.js:assertRealDoc"
+              }
+            }
+          ]
+        },
+        "id": "9bb7277f-b01c-42ef-8127-42adb05569ac",
+        "latencyMs": 116972,
+        "namedScores": {},
+        "prompt": {
+          "raw": "AiLearning/docs/补充公司信息页优化.txt",
+          "label": "{{source}}",
+          "config": {}
+        },
+        "promptId": "029e43347535dc89edfeea8984803d6df4ebe70f240734610007cf1222600f01",
+        "promptIdx": 0,
+        "provider": {
+          "id": "file://parse_provider.py",
+          "label": ""
+        },
+        "response": {
+          "output": "在商户续约补充公司信息页面新增获取天眼查按钮，用于同步最新工商信息，并调整页面数据加载、暂存、提交及审核后查看的数据来源逻辑。",
+          "metadata": {
+            "valid": true,
+            "stats": {
+              "flows": 2,
+              "tasks": 5,
+              "rules": 9,
+              "assumed": 1,
+              "open_questions": 5
+            },
+            "open_questions": [
+              "天眼查接口的详细定义（URL、请求参数、返回结构）未提供，无法确定具体数据字段映射。",
+              "提交后‘刷一次模型表【以天眼查为准】’的具体逻辑未明确：需要更新哪些模型字段？更新范围是什么？",
+              "文档中操作列有‘提交’按钮，但流程描述中多处使用‘保存’，两者是否指同一操作？需要确认。",
+              "审核驳回时‘暂存当前页面’的含义不清晰：是否表示系统自动恢复最近一次暂存数据？",
+              "身份证备件的来源未明确：文档仅提及营业执照备件取company_info.com_biz_license_file_no，身份证备件可能来自company_estaff_info或其他表，需确认。"
+            ],
+            "flow_ids": [
+              "F1",
+              "F2"
+            ],
+            "task_types": [
+              "同步",
+              "录入",
+              "同步",
+              "其他",
+              "其他"
+            ]
+          },
+          "cached": false
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "description": "真实 PRD（已知不完善）→ 结构合法 + 必须发现待确认问题",
+          "vars": {
+            "source": "AiLearning/docs/补充公司信息页优化.txt"
+          },
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "file://assertions/parse.js:assertRealDoc"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 0,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "source": "AiLearning/docs/补充公司信息页优化.txt"
+        },
+        "metadata": {
+          "valid": true,
+          "stats": {
+            "flows": 2,
+            "tasks": 5,
+            "rules": 9,
+            "assumed": 1,
+            "open_questions": 5
+          },
+          "open_questions": [
+            "天眼查接口的详细定义（URL、请求参数、返回结构）未提供，无法确定具体数据字段映射。",
+            "提交后‘刷一次模型表【以天眼查为准】’的具体逻辑未明确：需要更新哪些模型字段？更新范围是什么？",
+            "文档中操作列有‘提交’按钮，但流程描述中多处使用‘保存’，两者是否指同一操作？需要确认。",
+            "审核驳回时‘暂存当前页面’的含义不清晰：是否表示系统自动恢复最近一次暂存数据？",
+            "身份证备件的来源未明确：文档仅提及营业执照备件取company_info.com_biz_license_file_no，身份证备件可能来自company_estaff_info或其他表，需确认。"
+          ],
+          "flow_ids": [
+            "F1",
+            "F2"
+          ],
+          "task_types": [
+            "同步",
+            "录入",
+            "同步",
+            "其他",
+            "其他"
+          ],
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      },
+      {
+        "cost": 0,
+        "gradingResult": {
+          "pass": true,
+          "score": 1,
+          "reason": "All assertions passed",
+          "namedScores": {},
+          "tokensUsed": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 0
+          },
+          "componentResults": [
+            {
+              "pass": true,
+              "score": 1,
+              "reason": "极简文本：结构合法（1流程/3任务/3规则，open_questions=0，assumed=3）",
+              "assertion": {
+                "type": "javascript",
+                "value": "file://assertions/parse.js:assertInlineText"
+              }
+            }
+          ]
+        },
+        "id": "5e0af87d-660d-4179-9f5c-4439cb1939e9",
+        "latencyMs": 156745,
+        "namedScores": {},
+        "prompt": {
+          "raw": "商户可修改门店营业时间，每天一个时间段，开始时间必须早于结束时间，修改后次日生效。",
+          "label": "{{source}}",
+          "config": {}
+        },
+        "promptId": "029e43347535dc89edfeea8984803d6df4ebe70f240734610007cf1222600f01",
+        "promptIdx": 0,
+        "provider": {
+          "id": "file://parse_provider.py",
+          "label": ""
+        },
+        "response": {
+          "output": "商户可修改门店营业时间，每天设置一个时间段，校验开始时间早于结束时间，修改后次日生效。",
+          "metadata": {
+            "valid": true,
+            "stats": {
+              "flows": 1,
+              "tasks": 3,
+              "rules": 3,
+              "assumed": 3,
+              "open_questions": 0
+            },
+            "open_questions": [],
+            "flow_ids": [
+              "F1"
+            ],
+            "task_types": [
+              "录入",
+              "其他",
+              "同步"
+            ]
+          },
+          "cached": false
+        },
+        "score": 1,
+        "success": true,
+        "testCase": {
+          "description": "极简文本需求 → 解析出最小结构",
+          "vars": {
+            "source": "商户可修改门店营业时间，每天一个时间段，开始时间必须早于结束时间，修改后次日生效。"
+          },
+          "assert": [
+            {
+              "type": "javascript",
+              "value": "file://assertions/parse.js:assertInlineText"
+            }
+          ],
+          "options": {},
+          "metadata": {}
+        },
+        "testIdx": 1,
+        "tokenUsage": {
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "total": 0,
+          "numRequests": 1,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          },
+          "assertions": {
+            "total": 0,
+            "prompt": 0,
+            "completion": 0,
+            "cached": 0,
+            "numRequests": 1,
+            "completionDetails": {
+              "reasoning": 0,
+              "acceptedPrediction": 0,
+              "rejectedPrediction": 0,
+              "cacheReadInputTokens": 0,
+              "cacheCreationInputTokens": 0
+            }
+          }
+        },
+        "vars": {
+          "source": "商户可修改门店营业时间，每天一个时间段，开始时间必须早于结束时间，修改后次日生效。"
+        },
+        "metadata": {
+          "valid": true,
+          "stats": {
+            "flows": 1,
+            "tasks": 3,
+            "rules": 3,
+            "assumed": 3,
+            "open_questions": 0
+          },
+          "open_questions": [],
+          "flow_ids": [
+            "F1"
+          ],
+          "task_types": [
+            "录入",
+            "其他",
+            "同步"
+          ],
+          "_promptfooFileMetadata": {}
+        },
+        "failureReason": 0
+      }
+    ],
+    "stats": {
+      "successes": 2,
+      "failures": 0,
+      "errors": 0,
+      "tokenUsage": {
+        "prompt": 0,
+        "completion": 0,
+        "cached": 0,
+        "total": 0,
+        "numRequests": 2,
+        "completionDetails": {
+          "reasoning": 0,
+          "acceptedPrediction": 0,
+          "rejectedPrediction": 0,
+          "cacheReadInputTokens": 0,
+          "cacheCreationInputTokens": 0
+        },
+        "assertions": {
+          "total": 0,
+          "prompt": 0,
+          "completion": 0,
+          "cached": 0,
+          "numRequests": 0,
+          "completionDetails": {
+            "reasoning": 0,
+            "acceptedPrediction": 0,
+            "rejectedPrediction": 0,
+            "cacheReadInputTokens": 0,
+            "cacheCreationInputTokens": 0
+          }
+        }
+      },
+      "durationMs": 156764,
+      "evaluationDurationMs": 156764
+    }
+  },
+  "config": {
+    "tags": {},
+    "description": "M2 parse_requirement 结构评测（结构合法性 + 存在性）",
+    "prompts": [
+      "{{source}}"
+    ],
+    "providers": [
+      {
+        "id": "file://parse_provider.py",
+        "config": {
+          "pythonExecutable": "/Users/kaka/PycharmProjects/AiProject/.venv/bin/python"
+        }
+      }
+    ],
+    "tests": [
+      {
+        "description": "真实 PRD（已知不完善）→ 结构合法 + 必须发现待确认问题",
+        "vars": {
+          "source": "AiLearning/docs/补充公司信息页优化.txt"
+        },
+        "assert": [
+          {
+            "type": "javascript",
+            "value": "file://assertions/parse.js:assertRealDoc"
+          }
+        ]
+      },
+      {
+        "description": "极简文本需求 → 解析出最小结构",
+        "vars": {
+          "source": "商户可修改门店营业时间，每天一个时间段，开始时间必须早于结束时间，修改后次日生效。"
+        },
+        "assert": [
+          {
+            "type": "javascript",
+            "value": "file://assertions/parse.js:assertInlineText"
+          }
+        ]
+      }
+    ],
+    "env": {},
+    "outputPath": [
+      "interview_artifacts/samples/run_02.json"
+    ],
+    "extensions": [],
+    "metadata": {},
+    "evaluateOptions": {}
+  },
+  "shareableUrl": null,
+  "metadata": {
+    "promptfooVersion": "0.121.17",
+    "nodeVersion": "v24.18.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "exportedAt": "2026-10-25T16:15:30.801Z",
+    "evaluationCreatedAt": "2026-10-25T16:12:53.934Z"
+  },
+  "vars": [
+    "source"
+  ],
+  "runtimeOptions": {
+    "eventSource": "cli",
+    "showProgressBar": true,
+    "repeat": 1,
+    "maxConcurrency": 4,
+    "cache": false
+  }
+}

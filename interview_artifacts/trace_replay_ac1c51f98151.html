@@ -1,0 +1,92 @@
+<!DOCTYPE html><html lang='zh-CN'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width, initial-scale=1.0'><title>Trace 回放 ac1c51f98151</title><style>
+body{font-family:-apple-system,"PingFang SC",sans-serif;font-size:15px;line-height:1.7;max-width:820px;margin:0 auto;padding:20px 14px;color:#1a1a1a}
+h1{font-size:1.3em;border-bottom:2px solid #2563eb;padding-bottom:8px}
+h2{font-size:1.1em;margin-top:1.5em;border-left:4px solid #2563eb;padding-left:8px}
+.meta{background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;padding:12px 16px;font-size:.92em}
+.meta b{color:#b91c1c}
+.kpis{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.kpi{flex:1;min-width:110px;background:#eff6ff;border-radius:10px;padding:10px;text-align:center}
+.kpi .n{font-size:1.5em;font-weight:bold;color:#1e40af}.kpi .l{font-size:.8em;color:#64748b}
+.ev{border-radius:10px;padding:10px 14px;margin:10px 0;border:1px solid #e2e8f0}
+.ev .head{font-weight:bold;margin-bottom:4px}
+.t0{color:#64748b;font-size:.8em}
+.llm{background:#eff6ff;border-left:4px solid #2563eb}
+.tool{background:#ecfdf5;border-left:4px solid #059669}
+.start{background:#fffbeb;border-left:4px solid #d97706}
+.end{background:#fdf2f8;border-left:4px solid #db2777}
+pre{background:#f1f5f9;border-radius:8px;padding:8px 10px;overflow-x:auto;font-size:.82em;white-space:pre-wrap;word-break:break-all;margin:6px 0}
+.tag{display:inline-block;background:#2563eb;color:#fff;border-radius:6px;padding:1px 8px;font-size:.78em;margin-right:6px}
+.note{color:#64748b;font-size:.85em}
+table{border-collapse:collapse;width:100%;font-size:.88em}td,th{border:1px solid #cbd5e1;padding:6px;vertical-align:top}th{background:#eff6ff}
+</style></head><body><h1>Agent Trace 回放 <span class='note'>run_id=ac1c51f98151</span></h1><div class='meta'><b>Task：</b>请为以下需求设计测试用例：
+
+设计一个批量转账功能的测试用例。需求如下：
+企业用户可发起批量转账，单笔金额 0.01-50000 元，每批最多 100 笔，
+转账指令通过消息队列异步提交给银行渠道处理，银行渠道返回处理结果后更新转账状态。
+请同时覆盖金额/笔数的数值边界，以及消息队列、银行渠道等第三方依赖的异常场景。</div><div class='kpis'><div class='kpi'><div class='n'>3</div><div class='l'>steps</div></div><div class='kpi'><div class='n'>56.3s</div><div class='l'>总耗时</div></div><div class='kpi'><div class='n'>13657</div><div class='l'>prompt tokens</div></div><div class='kpi'><div class='n'>6717</div><div class='l'>completion tokens</div></div><div class='kpi'><div class='n'>3</div><div class='l'>LLM 调用</div></div><div class='kpi'><div class='n'>3</div><div class='l'>工具调用</div></div><div class='kpi'><div class='n'>final</div><div class='l'>stop_reason</div></div></div><p class='note'>字段遵循 OTel GenAI 语义约定（gen_ai.system / gen_ai.usage.* / gen_ai.tool.*）——面试话术：这就是 JD 里「基于 OTel 等可观测探针采集模型调用、Token、工具链路日志」的最小落地形态。</p><h2>事件时间线</h2><div class='ev start'><div class='head'>▶ run_start <span class='t0'>+0.0s</span></div>max_steps=10</div><div class='ev llm'><div class='head'>🧠 llm_call <span class='t0'>+6.3s</span></div><span class='tag'>deepseek-v4-pro</span>messages=2 · prompt_tokens=1713 · completion_tokens=708 · elapsed=6316ms</div><div class='ev tool'><div class='head'>🔧 tool_call <span class='t0'>+6.3s</span> · load_skill · 0ms</div><pre>{
+ &quot;name&quot;: &quot;boundary_value&quot;
+}</pre><pre># 边界值分析（boundary_value）
+
+# 边界值分析
+
+## 何时使用
+
+- 任务规则中出现显式数值约束：「0%-100%」「1-50000 元」「限领 1-10 张」「不超过 200 字」
+- 业务规则提到限额、阈值、周期、有效期
+
+## 测试点生成规则
+
+识别需求文档和业务规则中所有涉及数值、日期、字符串、集合的输入和参数。对每个参数生成以下测试点：
+- 最小边界值（如最小值、最早日期、空字符串、空集合）
+- 最大边界值（如最大值、最晚日期、最大长度、最大数量）
+- 边界+1（超出上限）和边界-1（低于下限）
+- 零值、负值（如适用）
+
+结合业务知识：业务规则中提到的限额、阈值、周期等应作为边界值测试的重点。
+
+## 用例展开规则
+
+对每个边界测试点，展开为完整用例：
+- 前置条件必须明确设定边界场景（如当前值为阈值-1）
+- 测试步骤中写明具体输入值和验证方式
+- 预期结果须明确：接受并正确处理 / 拒绝并给出具体错误码 / 系统稳定不崩溃
+
+## 反例（不要这样做）
+
+- 只测 min/max 不测 min-1/max+1——漏掉无效侧等于没测边界
+- 把并发、越权...[截断]</pre></div><div class='ev tool'><div class='head'>🔧 tool_call <span class='t0'>+6.3s</span> · load_skill · 0ms</div><pre>{
+ &quot;name&quot;: &quot;exception_path&quot;
+}</pre><pre># 异常路径（exception_path）
+
+# 异常路径
+
+## 何时使用
+
+- 任务调用外部系统/第三方接口（同步类任务重点）
+- 任务接受用户输入或文件上传
+- 存在并发操作、重复提交风险
+
+## 测试点生成规则
+
+识别需求文档中依赖的外部系统、用户输入点、并发操作场景。对每个风险点生成以下测试点：
+- 输入异常：null值、格式错误、类型不匹配、超长内容、特殊字符注入
+- 依赖异常：下游服务超时、返回异常、不可达
+- 并发异常：同一资源同时操作、重复提交
+- 资源异常：存储满、内存溢出、连接池耗尽
+
+结合业务知识：历史缺陷中提到的异常场景和故障记录应优先覆盖。
+
+## 用例展开规则
+
+对每个异常测试点，展开为完整用例：
+- 前置条件描述正常环境配置和触发异常的特定条件
+- 测试步骤中先建立正常状态，再触发异常
+- 预期结果明确：系统返回具体错误码、不影响其他业务、有合理日志记录
+
+## 反例（不要这样做）
+
+- 只测&quot;系统报错&quot;不写具体错误码和隔离性——异常用例的预期必须可判定
+- 把正常值边界当异常测——越界数值走 boundary_value</pre></div><div class='ev llm'><div class='head'>🧠 llm_call <span class='t0'>+53.2s</span></div><span class='tag'>deepseek-v4-pro</span>messages=5 · prompt_tokens=3043 · completion_tokens=5818 · elapsed=46916ms</div><div class='ev tool'><div class='head'>🔧 tool_call <span class='t0'>+53.2s</span> · write_output · 1ms</div><pre>{
+ &quot;filename&quot;: &quot;batch_transfer_cases.json&quot;,
+ &quot;content&quot;: &quot;[\n  {\n    \&quot;title\&quot;: \&quot;单笔金额为下限0.01元时批量转账受理成功\&quot;,\n    \&quot;precondition\&quot;: \&quot;企业用户已登录并具备批量转账权限；批量转账发起页已录入1笔转账明细，收款账户等信息合法，金额填0.01元。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;录入1笔金额为0.01元的转账明细\&quot;,\n      \&quot;提交批量转账\&quot;,\n      \&quot;查看受理结果及转账指令状态\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;系统受理成功，生成批量转账单及对应转账指令，指令进入消息队列待提交银行渠道；金额按0.01元正确记录。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;单笔金额为上限50000元时批量转账受理成功\&quot;,\n    \&quot;precondition\&quot;: \&quot;企业用户已登录并具备批量转账权限；批量转账发起页已录入1笔转账明细，收款账户等信息合法，金额填50000元。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;录入1笔金额为50000元的转账明细\&quot;,\n      \&quot;提交批量转账\&quot;,\n      \&quot;查看受理结果及转账指令状态\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;系统受理成功，生成转账指令并进入消息队列；金额按50000元正确记录。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;单笔金额低于下限(0元/负数)时提交被拒绝\&quot;,\n    \&quot;precondition\&quot;: \&quot;企业用户已登录并具备批量转账权限，进入批量转账发起页。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;录入1笔金额为0元的转账明细并提交\&quot;,\n      \&quot;再录入1笔金额为-0.01元的转账明细并提交\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;两次提交均被拒绝，提示单笔金额须在0.01-50000元之间，不生成转账指令、不进入消息队列。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;单笔金额高于上限50000.01元时提交被拒绝\&quot;,\n    \&quot;precondition\&quot;: \&quot;企业用户已登录并具备批量转账权限，进入批量转账发起页。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;录入1笔金额为50000.01元的转账明细\&quot;,\n      \&quot;提交批量转账\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;提交被拒绝，提示单笔金额须在0.01-50000元之间，不生成转账指令。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;每批笔数达到上限100笔时批量转账受理成功\&quot;,\n    \&quot;precondition\&quot;: \&quot;企业用户已登录并具备批量转账权限；已准备100笔金额均合法(如各1元)、收款账户合法的转账明细。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;录入100笔金额合法的转账明细\&quot;,\n      \&quot;提交批量转账\&quot;,\n      \&quot;查看受理结果及指令数量\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;系统受理成功，生成100笔转账指令并进入消息队列，无笔数截断或遗漏。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;每批笔数超过上限101笔时提交被拒绝\&quot;,\n    \&quot;precondition\&quot;: \&quot;企业用户已登录并具备批量转账权限；已准备101笔金额合法、收款账户合法的转账明细。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;录入101笔金额合法的转账明细\&quot;,\n      \&quot;提交批量转账\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;提交被拒绝，提示每批最多100笔，不生成转账指令。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;消息队列发送失败时转账指令不丢失且有重试/告警\&quot;,\n    \&quot;precondition\&quot;: \&quot;企业用户已提交合法的批量转账；消息队列生产者投递处于故障状态(如broker不可达或发送超时)。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;提交批量转账触发消息队列发送\&quot;,\n      \&quot;模拟消息队列发送失败\&quot;,\n      \&quot;查看转账指令状态、重试及告警日志\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;系统捕获发送异常，指令状态标记为待重试或失败，不静默丢单；触发重试或告警并记录完整日志，不影响其他批次。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;消息队列重复投递时幂等处理不重复记账/更新\&quot;,\n    \&quot;precondition\&quot;: \&quot;批量转账指令已成功提交，消息队列出现同一指令被重复投递/重复消费。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;同一转账指令消息被重复投递并重复消费\&quot;,\n      \&quot;查看该指令的转账状态与金额记录\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;系统进行幂等处理，仅执行一次转账处理，状态与金额不重复更新、不重复记账。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;银行渠道接口超时未返回结果时状态保持处理中并可重试\&quot;,\n    \&quot;precondition\&quot;: \&quot;转账指令已投递至银行渠道，银行渠道接口超时未在规定时间内返回处理结果。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;指令进入银行渠道处理并模拟超时无响应\&quot;,\n      \&quot;查看转账状态\&quot;,\n      \&quot;触发结果查询或重试\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;转账状态保持处理中，不误判为成功或失败；支持结果查询与超时重试，不阻塞同批次其他指令处理。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;银行渠道返回失败结果时更新状态并记录失败原因\&quot;,\n    \&quot;precondition\&quot;: \&quot;转账指令已投递至银行渠道，银行渠道返回处理失败结果(如收款账户无效)。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;银行渠道返回该笔转账失败结果\&quot;,\n      \&quot;查看对应转账状态与失败原因\&quot;,\n      \&quot;查看同批次其他笔转账状态\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;对应转账状态更新为失败并记录失败原因；同批次其他笔不受影响，可继续正常处理。\&quot;\n  },\n  {\n    \&quot;title\&quot;: \&quot;银行渠道不可达或返回异常格式时系统稳定并记录日志\&quot;,\n    \&quot;precondition\&quot;: \&quot;转账指令已投递，银行渠道服务不可达或返回异常格式数据。\&quot;,\n    \&quot;steps\&quot;: [\n      \&quot;模拟银行渠道服务不可达或返回异常格式数据\&quot;,\n      \&quot;查看系统响应与异常日志\&quot;\n    ],\n    \&quot;expected\&quot;: \&quot;系统捕获异常不崩溃，指令标记为失败或待重试，记录异常日志，不影响其他业务处理。\&quot;\n  }\n]\n&quot;
+}</pre><pre>已写入 /Users/kaka/PycharmProjects/AiProject/outputs/batch_transfer_cases.json（5440 字节）</pre></div><div class='ev llm'><div class='head'>🧠 llm_call <span class='t0'>+56.3s</span></div><span class='tag'>deepseek-v4-pro</span>messages=7 · prompt_tokens=8901 · completion_tokens=191 · elapsed=3031ms</div><div class='ev end'><div class='head'>■ run_end <span class='t0'>+56.3s</span></div>steps=3 · stop_reason=final · total=56266ms</div><h2>Token 明细</h2><table><tr><th>#</th><th>model</th><th>prompt</th><th>completion</th><th>elapsed</th></tr><tr><td>1</td><td>deepseek-v4-pro</td><td>1713</td><td>708</td><td>6316ms</td></tr><tr><td>2</td><td>deepseek-v4-pro</td><td>3043</td><td>5818</td><td>46916ms</td></tr><tr><td>3</td><td>deepseek-v4-pro</td><td>8901</td><td>191</td><td>3031ms</td></tr></table></body></html>

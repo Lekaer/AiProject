@@ -1,0 +1,136 @@
+{
+ "source": "商户可修改门店营业时间，每天一个时间段，开始时间必须早于结束时间，修改后次日生效。",
+ "temperature": 0,
+ "runs": [
+  {
+   "run": 1,
+   "flows": 1,
+   "tasks": 4,
+   "open_questions": 3,
+   "stats": {
+    "flows": 1,
+    "tasks": 4,
+    "rules": 2,
+    "assumed": 0,
+    "open_questions": 3
+   }
+  },
+  {
+   "run": 2,
+   "flows": 1,
+   "tasks": 4,
+   "open_questions": 2,
+   "stats": {
+    "flows": 1,
+    "tasks": 4,
+    "rules": 3,
+    "assumed": 2,
+    "open_questions": 2
+   }
+  },
+  {
+   "run": 3,
+   "flows": 1,
+   "tasks": 3,
+   "open_questions": 1,
+   "stats": {
+    "flows": 1,
+    "tasks": 3,
+    "rules": 2,
+    "assumed": 0,
+    "open_questions": 1
+   }
+  },
+  {
+   "run": 4,
+   "flows": 1,
+   "tasks": 3,
+   "open_questions": 3,
+   "stats": {
+    "flows": 1,
+    "tasks": 3,
+    "rules": 2,
+    "assumed": 2,
+    "open_questions": 3
+   }
+  },
+  {
+   "run": 5,
+   "flows": 1,
+   "tasks": 2,
+   "open_questions": 0,
+   "stats": {
+    "flows": 1,
+    "tasks": 2,
+    "rules": 2,
+    "assumed": 0,
+    "open_questions": 0
+   }
+  },
+  {
+   "run": 6,
+   "flows": 1,
+   "tasks": 4,
+   "open_questions": 2,
+   "stats": {
+    "flows": 1,
+    "tasks": 4,
+    "rules": 4,
+    "assumed": 3,
+    "open_questions": 2
+   }
+  },
+  {
+   "run": 7,
+   "flows": 1,
+   "tasks": 4,
+   "open_questions": 3,
+   "stats": {
+    "flows": 1,
+    "tasks": 4,
+    "rules": 4,
+    "assumed": 3,
+    "open_questions": 3
+   }
+  },
+  {
+   "run": 8,
+   "flows": 1,
+   "tasks": 3,
+   "open_questions": 2,
+   "stats": {
+    "flows": 1,
+    "tasks": 3,
+    "rules": 3,
+    "assumed": 1,
+    "open_questions": 2
+   }
+  },
+  {
+   "run": 9,
+   "flows": 1,
+   "tasks": 2,
+   "open_questions": 0,
+   "stats": {
+    "flows": 1,
+    "tasks": 2,
+    "rules": 2,
+    "assumed": 0,
+    "open_questions": 0
+   }
+  },
+  {
+   "run": 10,
+   "flows": 1,
+   "tasks": 3,
+   "open_questions": 3,
+   "stats": {
+    "flows": 1,
+    "tasks": 3,
+    "rules": 3,
+    "assumed": 0,
+    "open_questions": 3
+   }
+  }
+ ]
+}

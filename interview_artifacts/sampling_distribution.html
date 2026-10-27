@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N 次采样分布 · m2_parse</title><style>
+body{font-family:-apple-system,"PingFang SC",sans-serif;font-size:15px;line-height:1.75;max-width:820px;margin:0 auto;padding:20px 14px;color:#1a1a1a}
+h1{font-size:1.3em;border-bottom:2px solid #2563eb;padding-bottom:8px}
+h2{font-size:1.1em;margin-top:1.5em;border-left:4px solid #2563eb;padding-left:8px}
+table{border-collapse:collapse;width:100%;font-size:.9em}td,th{border:1px solid #cbd5e1;padding:6px;vertical-align:top}th{background:#eff6ff}
+.kpi{display:inline-block;background:#eff6ff;border-radius:10px;padding:10px 18px;margin:6px 8px 6px 0}
+.kpi b{font-size:1.4em;color:#1e40af}
+.note{color:#64748b;font-size:.88em}</style></head><body>
+<h1>N 次采样分布 · 评测门 m2_parse（temperature=0，--no-cache）</h1>
+<p class="note">实验设计：同一评测集（2 用例）独立重复 10 次，每次全新 LLM 调用、不走缓存。
+这对应 JD 任职资格第 4 条「针对 AI 非确定性输出设计量化评估方案」。</p>
+<p>
+<span class="kpi">有效采样 <b>8/10</b></span>
+<span class="kpi">通过率均值 <b>100%</b></span>
+<span class="kpi">单次全过（2/2）比例 <b>8/8</b></span>
+<span class="kpi">跨次一致率 <b>100%</b></span>
+</p>
+<p><b>infra 拦截 2 轮</b>：run_09.json, run_10.json —— DeepSeek API 402 余额不足，provider 捕获异常返回空输出，被断言判失败。
+归因纪律：<b>infra 故障与断言失败分开统计，质量指标只计有效运行</b>；这同时是门禁价值的实证——外部依赖异常被 100% 拦截，没有裸奔进主干。</p>
+<h2>单次通过率分布</h2>
+<svg width='560' height='54'><text x='0' y='37' font-size='12'>2/2</text><rect x='150' y='24' width='260' height='18' fill='#2563eb' rx='3'/><text x='416' y='37' font-size='12'>8</text></svg>
+<h2>逐次明细</h2>
+<table><tr><th>采样轮次</th><th>通过数</th></tr><tr><td>run_01.json</td><td>2/2</td></tr><tr><td>run_02.json</td><td>2/2</td></tr><tr><td>run_03.json</td><td>2/2</td></tr><tr><td>run_04.json</td><td>2/2</td></tr><tr><td>run_05.json</td><td>2/2</td></tr><tr><td>run_06.json</td><td>2/2</td></tr><tr><td>run_07.json</td><td>2/2</td></tr><tr><td>run_08.json</td><td>2/2</td></tr></table>
+<h2>分用例通过率（哪条用例不稳定一目了然）</h2>
+<table><tr><th>用例</th><th>通过次数</th><th>比例</th></tr><tr><td>真实 PRD（已知不完善）→ 结构合</td><td>8/8</td><td>100%</td></tr><tr><td>极简文本需求 → 解析出最小结构</td><td>8/8</td><td>100%</td></tr></table>
+
+<h2>parse 漂移量化（temperature=0，同一需求 × 10 次）</h2>
+<p>统计口径：需求「商户可修改门店营业时间，每天一个时间段，开始时间必须早于结束时间，修改后次日生效。」连续解析 10 次，统计结构事实（flows/tasks/open_questions）的跨次分布。
+flows: mean=1.00 min=1 max=1 ·
+tasks: mean=3.20 min=2 max=4 ·
+open_questions: mean=1.90 min=0 max=3</p>
+<h3>flows 数分布</h3><svg width='560' height='54'><text x='0' y='37' font-size='12'>1</text><rect x='150' y='24' width='260' height='18' fill='#059669' rx='3'/><text x='416' y='37' font-size='12'>10</text></svg>
+<h3>tasks 数分布</h3><svg width='560' height='106'><text x='0' y='37' font-size='12'>2</text><rect x='150' y='24' width='130' height='18' fill='#059669' rx='3'/><text x='286' y='37' font-size='12'>2</text><text x='0' y='63' font-size='12'>3</text><rect x='150' y='50' width='260' height='18' fill='#059669' rx='3'/><text x='416' y='63' font-size='12'>4</text><text x='0' y='89' font-size='12'>4</text><rect x='150' y='76' width='260' height='18' fill='#059669' rx='3'/><text x='416' y='89' font-size='12'>4</text></svg>
+<p><b>面试话术</b>：这就是 JD「一致性」指标在我项目里的实证——temperature=0 也不确定，所以断言设计是「结构不断言精确值」（五道门里 parse 门只断结构合法性 + 元素存在性），而量化漂移靠 N 次采样看分布，不看单点。</p>
+
+</body></html>

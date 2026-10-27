@@ -9,7 +9,18 @@
 - **双层用例生成**：任务级点用例（节点级维度选择 + 缺陷库注入）+ 流程级场景用例（主干 + 单点变异）
 - **混合检索缺陷知识库**：ChromaDB 向量 + BM25 + RRF 融合，按任务结构化字段程序构造查询，金标准 hit rate 7/7
 - **对抗审查**：red-team pass 审查生成结果的覆盖缺口，缺口定位到具体 rule_id，支持缺口 → 再生成闭环（evaluator-optimizer）
-- **评测质量门**：5 道 promptfoo 评测门（轨迹回归 / parse 结构 / skill 纪律 / 缺陷召回 / 对抗审查），断言失败退出码非零可直接作 CI 门禁
+- **评测质量门**：5 道 promptfoo 评测门（轨迹回归 / parse 结构 / skill 纪律 / 缺陷召回 / 对抗审查），断言失败退出码非零可直接作 CI 门禁。最近全绿：2026-10-26（LLM 相关门）；缺陷召回为纯检索门零 LLM 成本，本地可随时回归
+
+## 评测工具与演示产物
+
+- `trace_replay_html.py`：traces/*.jsonl → 独立 HTML 回放页（逐步展示 agent 的工具调用与决策）
+- `parse_drift_probe.py`：同输入 N 次生成，量化输出漂移（temp=0 下仍有 tasks 数 2~4 的漂移，实证"确定性采样≠确定性输出"）
+- `sampling_chart.py`：promptfoo 多次采样结果 → SVG 分布图（有效运行与 infra 拦截分开归因）
+- `interview_artifacts/`：演示产物合集——五道评测门 HTML 报告、trace 回放页、N=10 采样分布、漂移探针结果
+
+## 下一步路线（2026-10-27 定）
+
+用例可执行化：NL 用例 → 用例 DSL（白名单约束翻译层）→ 自动执行 → 变异断言评测。设计文档见 ai-exec/PLAN.md（另库）。
 
 ## 技术栈
 
