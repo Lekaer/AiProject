@@ -22,3 +22,8 @@ _项目总结_AI测试用例设计Agent.md
 *.iml
 AiLearning/rag/tests/*.json
 .git.backup*/
+
+# 压测过程文件（2026-10-27：只入库 stats 汇总，过程数据体积大且可再生）
+test/perf/*_stats_history.csv
+test/perf/*_exceptions.csv
+test/perf/*_failures.csv
